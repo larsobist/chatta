@@ -58,6 +58,7 @@ app.post('/chat', async (req, res) => {
         }];
 
         const responseContent = await sendMessage(messageHistory);
+        console.log(messageHistory)
 
         res.send({ message: { content: responseContent } });
     } catch (error) {

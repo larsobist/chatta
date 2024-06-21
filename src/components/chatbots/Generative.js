@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import './Generative.css';  // Import the CSS file for styling
 
 const GenerativeChatbot = () => {
     const [text, setText] = useState('');
-    const [response, setResponse] = useState('');
+    const [messages, setMessages] = useState([]);
+    const chatBoxRef = useRef(null);
+
+    useEffect(() => {
+        // Scroll to the bottom of the chat box when messages change
+        if (chatBoxRef.current) {
+            chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+        }
+    }, [messages]);
 
     const getCompletion = async () => {
+        // Display user's message and add typing indicator
+        const userMessage = { type: 'user', content: text };
+        const typingIndicator = { type: 'bot', content: 'typing' }; // Use a special content to identify the typing indicator
+        setMessages([...messages, userMessage, typingIndicator]);
+        setText('');
+
         try {
             const response = await fetch('http://localhost:8000/chat', {
                 method: 'POST',
@@ -13,35 +28,43 @@ const GenerativeChatbot = () => {
             });
             const data = await response.json();
             console.log(data);
+            // Remove the typing indicator before adding the bot response
+            const updatedMessages = [...messages, userMessage].filter(msg => msg.content !== 'typing');
             if (data.message && data.message.content) {
-                setResponse(data.message.content);
+                setMessages([...updatedMessages, { type: 'bot', content: data.message.content }]);
             } else {
-                setResponse('Unexpected response structure');
+                setMessages([...updatedMessages, { type: 'bot', content: 'Unexpected response structure' }]);
             }
         } catch (error) {
             console.error('Error fetching completion:', error);
-            setResponse('Error fetching completion');
+            const updatedMessages = [...messages, userMessage].filter(msg => msg.content !== 'typing');
+            setMessages([...updatedMessages, { type: 'bot', content: 'Error fetching completion' }]);
         }
     }
 
-    const noMessages = true;
     return (
-        <div>
-            {noMessages ? (
-                <>
-                    <p>The Ultimate place for booking rooms!
-                        We hope you enjoy!
-                    </p>
-                    <br/>
-                    {/*<PromptSuggestionRow />*/}
-                    {/* Show the messages here */}
-                    {/* <LoadingBubble /> */}
-                </>
-            ) : null}
-
-            <input onChange={e => setText(e.target.value)}></input>
-            <button onClick={getCompletion}>Submit</button>
-            <span>Response: {response}</span>
+        <div className="chat-container">
+            <div className="chat-box" ref={chatBoxRef}>
+                {messages.map((message, index) => (
+                    <div key={index} className={`chat-message ${message.type}`}>
+                        {message.content === 'typing' ? (
+                            <div className="typing-indicator">
+                                <span></span><span></span><span></span>
+                            </div>
+                        ) : message.content}
+                    </div>
+                ))}
+            </div>
+            <div className="input-container">
+                <input
+                    type="text"
+                    value={text}
+                    onChange={e => setText(e.target.value)}
+                    onKeyPress={e => e.key === 'Enter' ? getCompletion() : null}
+                    placeholder="Type your message here..."
+                />
+                <button onClick={getCompletion}>Send</button>
+            </div>
         </div>
     );
 }

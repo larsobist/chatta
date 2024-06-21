@@ -1,12 +1,19 @@
+.info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: auto;
+    overflow: hidden;
+}
+
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: calc(100vh - 180px);
     width: 100%;
     max-width: 600px;
     margin: auto;
-    border: 1px solid #ccc;
-    border-radius: 8px;
     overflow: hidden;
 }
 

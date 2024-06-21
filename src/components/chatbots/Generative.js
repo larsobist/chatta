@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './Generative.scss';  // Import the CSS file for styling
+import './Chatbots.scss';  // Import the CSS file for styling
 
-const GenerativeChatbot = () => {
+const Generative = () => {
     const [text, setText] = useState('');
     const [messages, setMessages] = useState([]);
     const chatBoxRef = useRef(null);
@@ -69,4 +69,4 @@ const GenerativeChatbot = () => {
     );
 }
 
-export default GenerativeChatbot;
+export default Generative;

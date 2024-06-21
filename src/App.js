@@ -1,4 +1,4 @@
-import './App.css';
+import './App.scss';
 import GenerativeChatbot from "./components/chatbots/Generative";
 
 const App = () => {

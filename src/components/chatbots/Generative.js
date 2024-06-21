@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './Generative.css';  // Import the CSS file for styling
+import './Generative.scss';  // Import the CSS file for styling
 
 const GenerativeChatbot = () => {
     const [text, setText] = useState('');
@@ -16,7 +16,7 @@ const GenerativeChatbot = () => {
     const getCompletion = async () => {
         // Display user's message and add typing indicator
         const userMessage = { type: 'user', content: text };
-        const typingIndicator = { type: 'bot', content: 'typing' }; // Use a special content to identify the typing indicator
+        const typingIndicator = { type: 'bot', content: 'typing' };
         setMessages([...messages, userMessage, typingIndicator]);
         setText('');
 

@@ -5,14 +5,23 @@ const GenerativeChatbot = () => {
     const [response, setResponse] = useState('');
 
     const getCompletion = async () => {
-        const response = await fetch('http://localhost:8000/chat', {
-            method: 'POST',
-            body: JSON.stringify({ text }),
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
-        console.log(data);
-        setResponse(data.message.content);
+        try {
+            const response = await fetch('http://localhost:8000/chat', {
+                method: 'POST',
+                body: JSON.stringify({ text }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            console.log(data);
+            if (data.message && data.message.content) {
+                setResponse(data.message.content);
+            } else {
+                setResponse('Unexpected response structure');
+            }
+        } catch (error) {
+            console.error('Error fetching completion:', error);
+            setResponse('Error fetching completion');
+        }
     }
 
     const noMessages = true;
@@ -20,9 +29,7 @@ const GenerativeChatbot = () => {
         <div>
             {noMessages ? (
                 <>
-                    <p>The Ultimate place for Star Wars super fans!
-                        Ask StarGPT anything about the fantastic topic of Star Wars and it will come back with the most
-                        up-to-date answers.
+                    <p>The Ultimate place for booking rooms!
                         We hope you enjoy!
                     </p>
                     <br/>
@@ -36,7 +43,7 @@ const GenerativeChatbot = () => {
             <button onClick={getCompletion}>Submit</button>
             <span>Response: {response}</span>
         </div>
-  );
+    );
 }
 
 export default GenerativeChatbot;

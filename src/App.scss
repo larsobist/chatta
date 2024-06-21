@@ -11,28 +11,43 @@ body {
 
 .menu {
   height: 60px;
-  background: green;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 0 50px;
+  background-color: #3f51b5;
+  color: white;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
 
-  .avatar-group {
-    float: right;
-    width: 200px;
-    display: flex;
-    padding-top: 8px;
-    gap: 0;
-    transition: gap 0.3s ease;
-
-    &:hover {
-      gap: 12px;
-    }
+  .logo {
+    font-size: 1.5rem;
   }
 
-  .avatar {
-    cursor: pointer;
-    transition: 0.3s ease;
+  .user-selection {
+    display: flex;
+    align-items: center;
 
-    &:hover {
-      transform: scale(1.1);
+    .avatar-group {
+      float: right;
+      width: 200px;
+      display: flex;
+      padding-top: 5px;
+      gap: 0;
+      transition: gap 0.3s ease;
+
+      &:hover {
+        gap: 12px;
+      }
+    }
+
+    .avatar {
+      cursor: pointer;
+      transition: 0.3s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
     }
   }
 }

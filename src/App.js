@@ -6,7 +6,10 @@ import { blue, cyan, indigo, lightBlue } from "@mui/material/colors";
 import React, { useState } from "react";
 
 const App = () => {
-    const [selectedAvatar, setSelectedAvatar] = useState(null);
+    const initialAvatar = { initial: "L", name: "Lars", color: indigo[500] };
+
+    const [selectedAvatar, setSelectedAvatar] = useState(initialAvatar);
+
     const avatars = [
         { initial: "L", name: "Lars", color: indigo[500] },
         { initial: "P", name: "Peter", color: blue[500] },
@@ -28,25 +31,33 @@ const App = () => {
     return (
         <div>
             <div className="menu" style={getMenuStyle()}>
-                chatta
-                <AvatarGroup max={4} className="avatar-group">
-                    {avatars.map((avatar, index) => (
-                        <Avatar
-                            key={index}
-                            sx={{ bgcolor: avatar.color }}
-                            className="avatar"
-                            onClick={() => handleAvatarClick(index)}
-                        >
-                            {avatar.initial}
-                        </Avatar>
-                    ))}
-                </AvatarGroup>
+                <div className="logo">
+                    chatta
+                    {selectedAvatar && (
+                        <span> for {selectedAvatar.name}</span>
+                    )}
+                </div>
+
+                <div className="user-selection">
+                    <div className="vertical-center">
+                        Anderer Nutzer:
+                    </div>
+                    <AvatarGroup max={4} className="avatar-group">
+                        {avatars.map((avatar, index) => (
+                            <Avatar
+                                key={index}
+                                sx={{ bgcolor: avatar.color }}
+                                className="avatar"
+                                onClick={() => handleAvatarClick(index)}
+                            >
+                                {avatar.initial}
+                            </Avatar>
+                        ))}
+                    </AvatarGroup>
+                </div>
             </div>
 
             <div className="app">
-                {selectedAvatar && (
-                    <div className="selected-avatar">{selectedAvatar.name}</div>
-                )}
                 <Chatbots />
             </div>
         </div>

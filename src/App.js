@@ -58,7 +58,7 @@ const App = () => {
             </div>
 
             <div className="app">
-                <Chatbots />
+                <Chatbots selectedAvatar={selectedAvatar} />
             </div>
         </div>
     );

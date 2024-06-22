@@ -5,7 +5,7 @@ import Rule from "./Rule";
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-const Chatbots = () => {
+const Chatbots = ({ selectedAvatar }) => {
     const [chatbot, setChatbot] = useState('rule');
 
     const handleChatbot = (event, newChatbot) => {
@@ -37,7 +37,7 @@ const Chatbots = () => {
             )}
 
             {chatbot === 'generative' && (
-                <Generative />
+                <Generative selectedAvatar={selectedAvatar}/>
             )}
 
         </div>

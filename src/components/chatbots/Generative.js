@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Chatbots.scss';  // Import the CSS file for styling
 
-const Generative = () => {
+const Generative = ({ selectedAvatar }) => {
     const [text, setText] = useState('');
     const [messages, setMessages] = useState([]);
     const chatBoxRef = useRef(null);
@@ -46,7 +46,11 @@ const Generative = () => {
         <div className="chat-container">
             <div className="chat-box" ref={chatBoxRef}>
                 {messages.map((message, index) => (
-                    <div key={index} className={`chat-message ${message.type}`}>
+                    <div
+                        key={index}
+                        className={`chat-message ${message.type}`}
+                        style={message.type === 'user' ? { backgroundColor: selectedAvatar.color } : {}}
+                    >
                         {message.content === 'typing' ? (
                             <div className="typing-indicator">
                                 <span></span><span></span><span></span>
@@ -63,7 +67,12 @@ const Generative = () => {
                     onKeyPress={e => e.key === 'Enter' ? getCompletion() : null}
                     placeholder="Type your message here..."
                 />
-                <button onClick={getCompletion}>Send</button>
+                <button
+                    onClick={getCompletion}
+                    style={{ backgroundColor: selectedAvatar.color }}
+                >
+                    Send
+                </button>
             </div>
         </div>
     );

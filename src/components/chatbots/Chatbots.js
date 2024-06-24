@@ -33,7 +33,7 @@ const Chatbots = ({ selectedAvatar }) => {
 
             </div>
             {chatbot === 'rule' && (
-                <Rule />
+                <Rule selectedAvatar={selectedAvatar}/>
             )}
 
             {chatbot === 'generative' && (

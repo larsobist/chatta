@@ -4,6 +4,21 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const { OpenAI } = require('openai');
 
+const { GoogleAuth } = require('google-auth-library');
+const SERVICE_ACCOUNT_KEY = {
+    type: process.env.GOOGLE_TYPE,
+    project_id: process.env.GOOGLE_PROJECT_ID,
+    private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    auth_uri: process.env.GOOGLE_AUTH_URI,
+    token_uri: process.env.GOOGLE_TOKEN_URI,
+    auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_X509_CERT_URL,
+    client_x509_cert_url: process.env.GOOGLE_CLIENT_X509_CERT_URL,
+    universe_domain: process.env.GOOGLE_UNIVERSE_DOMAIN,
+};
+
 const app = express();
 const PORT = 8000; // Change the port if necessary
 
@@ -22,8 +37,32 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
+
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+
+// Google
+app.get('/get-token', async (req, res) => {
+    console.log('Received request for /get-token');
+    try {
+        const client = new GoogleAuth({
+            credentials: SERVICE_ACCOUNT_KEY,
+            scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+        });
+
+        const accessToken = await client.getAccessToken();
+        res.json({ token: accessToken });
+    } catch (error) {
+        console.error('Error generating access token:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 
 async function fetchRoomData() {
     await client.connect();

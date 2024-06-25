@@ -3,27 +3,48 @@ import Chatbots from "./components/chatbots/Chatbots";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import Avatar from "@mui/material/Avatar";
 import { blue, cyan, indigo, lightBlue } from "@mui/material/colors";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const App = () => {
-    const initialAvatar = { initial: "L", name: "Lars", color: indigo[500] };
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [users, setUsers] = useState([]);
 
-    const [selectedAvatar, setSelectedAvatar] = useState(initialAvatar);
+    // Define a set of colors
+    const colors = [indigo[500], blue[500], lightBlue[500], cyan[500]];
 
-    const avatars = [
-        { initial: "L", name: "Lars", color: indigo[500] },
-        { initial: "P", name: "Peter", color: blue[500] },
-        { initial: "N", name: "Niels", color: lightBlue[500] },
-        { initial: "O", name: "Olaf", color: cyan[500] }
-    ];
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/users');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch users');
+                }
+                const data = await response.json();
+                // Assign colors to users
+                const usersWithColors = data.map((user, index) => ({
+                    ...user,
+                    color: colors[index % colors.length] // Cycle through colors
+                }));
+                console.log(usersWithColors);
+                setUsers(usersWithColors);
+                if (usersWithColors.length > 0) {
+                    setSelectedUser(usersWithColors[0]); // Set the first user as the selected user
+                }
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        };
 
-    const handleAvatarClick = (index) => {
-        setSelectedAvatar(avatars[index]);
+        fetchUsers();
+    }, []);
+
+    const handleUserClick = (index) => {
+        setSelectedUser(users[index]);
     };
 
     const getMenuStyle = () => {
-        if (selectedAvatar) {
-            return { backgroundColor: selectedAvatar.color };
+        if (selectedUser) {
+            return { backgroundColor: selectedUser.color };
         }
         return {};
     };
@@ -33,8 +54,8 @@ const App = () => {
             <div className="menu" style={getMenuStyle()}>
                 <div className="logo">
                     chatta
-                    {selectedAvatar && (
-                        <span> for {selectedAvatar.name}</span>
+                    {selectedUser && (
+                        <span> for {selectedUser.name}</span>
                     )}
                 </div>
 
@@ -43,14 +64,14 @@ const App = () => {
                         Anderer Nutzer:
                     </div>
                     <AvatarGroup max={4} className="avatar-group">
-                        {avatars.map((avatar, index) => (
+                        {users.map((user, index) => (
                             <Avatar
                                 key={index}
-                                sx={{ bgcolor: avatar.color }}
+                                sx={{ bgcolor: user.color }}
                                 className="avatar"
-                                onClick={() => handleAvatarClick(index)}
+                                onClick={() => handleUserClick(index)}
                             >
-                                {avatar.initial}
+                                {user.initial}
                             </Avatar>
                         ))}
                     </AvatarGroup>
@@ -58,7 +79,7 @@ const App = () => {
             </div>
 
             <div className="app">
-                <Chatbots selectedAvatar={selectedAvatar} />
+                {selectedUser && <Chatbots selectedUser={selectedUser} />}
             </div>
         </div>
     );

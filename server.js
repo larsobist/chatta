@@ -4,7 +4,6 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const { OpenAI } = require('openai');
 const { GoogleAuth } = require('google-auth-library');
-const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const PORT = 8000; // Change the port if necessary
@@ -22,42 +21,63 @@ const client = new MongoClient(uri, {
     }
 });
 
+async function connectClient() {
+    if (!client.topology || !client.topology.isConnected()) {
+        await client.connect();
+        console.log("Connected to MongoDB");
+    }
+}
+
 async function findBooking(query) {
-    await client.connect();
+    await connectClient();
     const database = client.db('chattaDatabase');
     const collection = database.collection('bookings');
-    const bookings = await collection.find(query).toArray();
-    await client.close();
-    return bookings;
+    return await collection.find(query).toArray();
 }
 
 async function makeBooking(newBooking) {
-    await client.connect();
+    await connectClient();
     const database = client.db('chattaDatabase');
     const bookingsCollection = database.collection('bookings');
-    const result = await bookingsCollection.insertOne(newBooking);
-    await client.close();
-    return result.insertedId;
+    return await bookingsCollection.insertOne(newBooking);
 }
 
 async function deleteBooking(query) {
-    await client.connect();
+    await connectClient();
     const database = client.db('chattaDatabase');
     const bookingsCollection = database.collection('bookings');
-    const result = await bookingsCollection.deleteOne(query);
-    await client.close();
-    return result.deletedCount;
+    return await bookingsCollection.deleteOne(query);
 }
 
 async function updateBooking(query, update) {
-    await client.connect();
+    await connectClient();
     const database = client.db('chattaDatabase');
     const bookingsCollection = database.collection('bookings');
-    const result = await bookingsCollection.updateOne(query, { $set: update });
-    await client.close();
-    return result.modifiedCount;
+    return await bookingsCollection.updateOne(query, { $set: update });
 }
 
+async function fetchUsers() {
+    try {
+        await connectClient();
+        console.log('Connected to database');
+        const database = client.db('chattaDatabase');
+        const usersCollection = database.collection('users');
+        return await usersCollection.find().toArray();
+    } catch (error) {
+        console.error('Database connection or query error:', error);
+        throw error;  // Rethrow error to be caught in the endpoint handler
+    }
+}
+
+app.get('/users', async (req, res) => {
+    try {
+        const users = await fetchUsers();
+        res.json(users);
+    } catch (error) {
+        console.error('Error in /users endpoint:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 // Google Auth
 const SERVICE_ACCOUNT_KEY = {
@@ -100,9 +120,13 @@ const openai = new OpenAI({
 
 app.post('/chat', async (req, res) => {
     const textInput = req.body.text;
+    const userName = req.body.user; // Get the user from the request body
     const currentDate = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    console.log(userName)
 
     try {
+        messageHistory = []; // Reset message history
+
         if (messageHistory.length === 0) {
             messageHistory.push({
                 role: "system",
@@ -124,11 +148,11 @@ app.post('/chat', async (req, res) => {
                     parameters: {
                         type: "object",
                         properties: {
-                            userId: { type: "string" },
+                            userName: { type: "string" },
                             timeSlot: { type: "string" },
                             date: { type: "string" }
                         },
-                        required: ["userId"]
+                        required: ["userName"]
                     }
                 },
                 {
@@ -136,12 +160,12 @@ app.post('/chat', async (req, res) => {
                     parameters: {
                         type: "object",
                         properties: {
+                            userName: { type: "string" },
                             roomNumber: { type: "string" },
-                            userId: { type: "string" },
                             date: { type: "string" },
                             timeSlot: { type: "string" }
                         },
-                        required: ["roomNumber", "userId", "date", "timeSlot"]
+                        required: ["roomNumber", "date", "timeSlot"]
                     }
                 },
                 {
@@ -149,11 +173,10 @@ app.post('/chat', async (req, res) => {
                     parameters: {
                         type: "object",
                         properties: {
-                            userId: { type: "string" },
                             date: { type: "string" },
                             timeSlot: { type: "string" }
                         },
-                        required: ["userId", "date", "timeSlot"]
+                        required: ["date", "timeSlot"]
                     }
                 },
                 {
@@ -161,13 +184,12 @@ app.post('/chat', async (req, res) => {
                     parameters: {
                         type: "object",
                         properties: {
-                            userId: { type: "string" },
                             date: { type: "string" },
                             timeSlot: { type: "string" },
                             new_date: { type: "string" },
                             new_timeSlot: { type: "string" }
                         },
-                        required: ["userId", "date", "timeSlot", "new_date", "new_timeSlot"]
+                        required: ["date", "timeSlot", "new_date", "new_timeSlot"]
                     }
                 }
             ],
@@ -176,32 +198,35 @@ app.post('/chat', async (req, res) => {
 
         const responseContent = completion.choices[0].message;
         if (responseContent.function_call) {
-            const { name, arguments } = responseContent.function_call;
+            const { name, arguments: args } = responseContent.function_call;
             let result;
             let naturalLanguageResponse = "";
 
             switch (name) {
                 case "findBooking":
-                    result = await findBooking(JSON.parse(arguments));
+                    result = await findBooking({ ...JSON.parse(args), userName: userName });
                     naturalLanguageResponse = result.length > 0 ?
-                        `Here are the bookings found: ${result.map(booking => `Room ${booking.roomNumber} booked by ${booking.userId} on ${booking.date} at ${booking.timeSlot}`).join(", ")}.` :
+                        `Here are the bookings found: ${result.map(booking => `Room ${booking.roomNumber} booked by ${booking.userName} on ${booking.date} at ${booking.timeSlot}`).join(", ")}.` :
                         "No bookings found.";
                     break;
                 case "makeBooking":
-                    const newBooking = JSON.parse(arguments);
+                    const newBooking = JSON.parse(args);
                     result = await makeBooking(newBooking);
-                    naturalLanguageResponse = `Your booking has been made successfully with ID: ${result}.`;
+                    naturalLanguageResponse = `Your booking has been made successfully with ID: ${result.insertedId}.`;
                     break;
                 case "deleteBooking":
-                    const deleteQuery = JSON.parse(arguments);
+                    const deleteQuery = { ...JSON.parse(args), userName: userName };
+                    console.log(deleteQuery)
                     result = await deleteBooking(deleteQuery);
-                    naturalLanguageResponse = result > 0 ? "The booking has been deleted successfully." : "No booking was found to delete.";
+                    naturalLanguageResponse = result.deletedCount > 0 ? "The booking has been deleted successfully." : "No booking was found to delete.";
                     break;
                 case "updateBooking":
-                    const { userId, date, timeSlot, new_date, new_timeSlot } = JSON.parse(arguments);
-                    result = await updateBooking({ userId, date, timeSlot }, { date: new_date, timeSlot: new_timeSlot });
-                    naturalLanguageResponse = result > 0 ? "The booking has been updated successfully." : "No booking was found to update.";
+                    const { date, timeSlot, new_date, new_timeSlot } = JSON.parse(args);
+                    result = await updateBooking({ userName: userName, date, timeSlot }, { date: new_date, timeSlot: new_timeSlot });
+                    naturalLanguageResponse = result.matchedCount > 0 ? "The booking has been updated successfully." : "No booking was found to update.";
                     break;
+                default:
+                    console.log("Default Case ")
             }
 
             messageHistory.push({
@@ -225,6 +250,5 @@ app.post('/chat', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Listening on ${PORT}`);
-    console.log("Chatbot: Connecting to MongoDB...");
+    console.log(`App listening on ${PORT}`);
 });

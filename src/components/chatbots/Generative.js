@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Chatbots.scss';  // Import the CSS file for styling
 
-const Generative = ({ selectedAvatar }) => {
+const Generative = ({ selectedUser }) => {
     const [text, setText] = useState('');
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([{ type: 'bot', content: `Hi ${selectedUser.name}, how can I help you?` }]);
     const chatBoxRef = useRef(null);
 
     useEffect(() => {
@@ -23,7 +23,7 @@ const Generative = ({ selectedAvatar }) => {
         try {
             const response = await fetch('http://localhost:8000/chat', {
                 method: 'POST',
-                body: JSON.stringify({ text }),
+                body: JSON.stringify({ text, user: selectedUser.name }),
                 headers: { 'Content-Type': 'application/json' }
             });
             const data = await response.json();
@@ -49,7 +49,7 @@ const Generative = ({ selectedAvatar }) => {
                     <div
                         key={index}
                         className={`chat-message ${message.type}`}
-                        style={message.type === 'user' ? { backgroundColor: selectedAvatar.color } : {}}
+                        style={message.type === 'user' ? { backgroundColor: selectedUser.color } : {}}
                     >
                         {message.content === 'typing' ? (
                             <div className="typing-indicator">
@@ -69,7 +69,7 @@ const Generative = ({ selectedAvatar }) => {
                 />
                 <button
                     onClick={getCompletion}
-                    style={{ backgroundColor: selectedAvatar.color }}
+                    style={{ backgroundColor: selectedUser.color }}
                 >
                     Send
                 </button>

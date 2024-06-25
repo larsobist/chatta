@@ -7,7 +7,7 @@ const AGENT_ID = 'b56dc6e2-c2e6-416f-b1e4-31ea739ff566';
 const LOCATION = 'europe-west3';
 const LANGUAGE_CODE = 'de';
 
-const Rule = ({ selectedAvatar }) => {
+const Rule = ({ selectedUser }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [accessToken, setAccessToken] = useState(null);
@@ -89,7 +89,7 @@ const Rule = ({ selectedAvatar }) => {
                     <div
                         key={index}
                         className={`chat-message ${message.sender}`}
-                        style={message.sender === 'user' ? { backgroundColor: selectedAvatar.color } : {}}
+                        style={message.sender === 'user' ? { backgroundColor: selectedUser.color } : {}}
                     >
                         {message.text === 'typing' ? (
                             <div className="typing-indicator">
@@ -109,7 +109,7 @@ const Rule = ({ selectedAvatar }) => {
                 />
                 <button
                     onClick={handleSend}
-                    style={{ backgroundColor: selectedAvatar.color }}
+                    style={{ backgroundColor: selectedUser.color }}
                 >
                     Send
                 </button>

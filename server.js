@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const { OpenAI } = require('openai');
+const { GoogleAuth } = require('google-auth-library');
 
 const SERVICE_ACCOUNT_KEY = {
     type: process.env.GOOGLE_TYPE,

@@ -4,7 +4,6 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const { OpenAI } = require('openai');
 
-const { GoogleAuth } = require('google-auth-library');
 const SERVICE_ACCOUNT_KEY = {
     type: process.env.GOOGLE_TYPE,
     project_id: process.env.GOOGLE_PROJECT_ID,
@@ -37,7 +36,6 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-
 app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:3000',
@@ -45,8 +43,10 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// In-memory message history
+let messageHistory = [];
 
-// Google
+// Google Auth
 app.get('/get-token', async (req, res) => {
     console.log('Received request for /get-token');
     try {
@@ -62,7 +62,6 @@ app.get('/get-token', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
 
 async function fetchRoomData() {
     await client.connect();
@@ -88,16 +87,24 @@ app.post('/chat', async (req, res) => {
 
     try {
         const roomData = await fetchRoomData();
-        let messageHistory = [{
-            role: "system",
-            content: "You are a helpful room booking assistant. Help the user with all necessary information questions and make calls to the database if needed. Your data is " + JSON.stringify(roomData),
-        }, {
+
+        if (messageHistory.length === 0) {
+            messageHistory.push({
+                role: "system",
+                content: "You are a helpful room booking assistant. Help the user with all necessary information questions and make calls to the database if needed. Your data is " + JSON.stringify(roomData),
+            });
+        }
+
+        messageHistory.push({
             role: "user",
             content: textInput
-        }];
+        });
 
         const responseContent = await sendMessage(messageHistory);
-        console.log(messageHistory)
+        messageHistory.push({
+            role: "assistant",
+            content: responseContent
+        });
 
         res.send({ message: { content: responseContent } });
     } catch (error) {

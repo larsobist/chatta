@@ -6,15 +6,12 @@ const { OpenAI } = require('openai');
 const { GoogleAuth } = require('google-auth-library');
 
 const app = express();
-const PORT = 8000; // Change the port if necessary
+const PORT = 8000;
 
 app.use(express.json());
 app.use(cors());
 
-// In-memory store for the selected user
-let selectedUser = null;
-
-// MongoDB
+// MongoDB setup
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.nbzpr4r.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const client = new MongoClient(uri, {
     serverApi: {
@@ -24,65 +21,25 @@ const client = new MongoClient(uri, {
     }
 });
 
-async function connectClient() {
+const connectClient = async () => {
     if (!client.topology || !client.topology.isConnected()) {
         await client.connect();
         console.log("Connected to MongoDB");
     }
-}
+};
 
-async function findBooking(userName, query) {
-    await connectClient();
-    query.userName = userName;
+const getCollection = (collectionName) => {
+    return client.db('chattaDatabase').collection(collectionName);
+};
 
-    console.log(JSON.stringify(query) + " FIND QUERY");
-    const database = client.db('chattaDatabase');
-    const collection = database.collection('bookings');
-    return await collection.find(query).toArray();
-}
-
-async function createBooking(userName, query) {
-    await connectClient();
-    query.userName = userName;
-    console.log(JSON.stringify(query) + " ADD QUERY");
-    const database = client.db('chattaDatabase');
-    const bookingsCollection = database.collection('bookings');
-    return await bookingsCollection.insertOne(query);
-}
-
-async function deleteBooking(userName, query) {
-    await connectClient();
-    query.userName = userName;
-    console.log(JSON.stringify(query) + " DELETE QUERY");
-    const database = client.db('chattaDatabase');
-    const bookingsCollection = database.collection('bookings');
-    return await bookingsCollection.deleteOne(query);
-}
-
-async function updateBooking(userName, query, update) {
-    await connectClient();
-    query.userName = userName;
-    console.log(JSON.stringify(query) + " UPDATE QUERY");
-    const database = client.db('chattaDatabase');
-    const bookingsCollection = database.collection('bookings');
-    return await bookingsCollection.updateOne(query, { $set: update });
-}
-
-async function fetchUsers() {
-    try {
-        await connectClient();
-        const database = client.db('chattaDatabase');
-        const usersCollection = database.collection('users');
-        return await usersCollection.find().toArray();
-    } catch (error) {
-        console.error('Database connection or query error:', error);
-        throw error;  // Rethrow error to be caught in the endpoint handler
-    }
-}
+// User selection in-memory store
+let selectedUser = null;
 
 app.get('/users', async (req, res) => {
     try {
-        const users = await fetchUsers();
+        await connectClient();
+        const usersCollection = getCollection('users');
+        const users = await usersCollection.find().toArray();
         res.json(users);
     } catch (error) {
         console.error('Error in /users endpoint:', error);
@@ -93,7 +50,9 @@ app.get('/users', async (req, res) => {
 app.post('/selectedUser', async (req, res) => {
     const { selectedUser: user } = req.body;
     try {
-        const users = await fetchUsers();
+        await connectClient();
+        const usersCollection = getCollection('users');
+        const users = await usersCollection.find().toArray();
         if (user && users.find(u => u.id === user.id)) {
             selectedUser = user;
             res.status(200).json({ message: 'Selected user updated successfully' });
@@ -106,27 +65,24 @@ app.post('/selectedUser', async (req, res) => {
     }
 });
 
-// OPENAI
-
-// In-memory message history
-let messageHistory = [];
-
+// OpenAI setup
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
+// In-memory message history
+let messageHistory = [];
+
 app.post('/chat', async (req, res) => {
     const textInput = req.body.text;
-    const currentDate = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    const currentDate = new Date().toISOString().split('T')[0];
 
     try {
-        // Check if selectedUser is set
         if (!selectedUser) {
-            res.status(400).json({ message: 'No user selected. Please select a user first.' });
-            return;
+            return res.status(400).json({ message: 'No user selected. Please select a user first.' });
         }
 
-        const userName = selectedUser.name; // Use the stored selected user's name
+        const userName = selectedUser.name;
 
         if (messageHistory.length === 0) {
             messageHistory.push({
@@ -155,7 +111,7 @@ app.post('/chat', async (req, res) => {
             },
             {
                 name: "create_booking",
-                description: "create a reservation with the given params",
+                description: "Create a reservation with the given params",
                 parameters: {
                     type: "object",
                     properties: {
@@ -198,29 +154,34 @@ app.post('/chat', async (req, res) => {
             model: "gpt-3.5-turbo",
             messages: messageHistory,
             functions: tools,
-            function_call: "auto" // Let the model decide when to call a function
+            function_call: "auto"
         });
 
         const responseMessage = response.choices[0].message;
 
-        // Step 2: check if the model wanted to call a function
         if (responseMessage.function_call) {
             const functionName = responseMessage.function_call.name;
             const functionArgs = JSON.parse(responseMessage.function_call.arguments);
             let functionResponse;
 
+            await connectClient();
+            const bookingsCollection = getCollection('bookings');
+
             switch (functionName) {
                 case "find_booking":
-                    functionResponse = await findBooking(userName, functionArgs);
+                    functionResponse = await bookingsCollection.find({ userName, ...functionArgs }).toArray();
                     break;
                 case "create_booking":
-                    functionResponse = await createBooking(userName, functionArgs);
-                    break;
-                case "update_booking":
-                    functionResponse = await updateBooking(userName, functionArgs.query, functionArgs.update);
+                    functionResponse = await bookingsCollection.insertOne({ userName, ...functionArgs });
                     break;
                 case "delete_booking":
-                    functionResponse = await deleteBooking(userName, functionArgs);
+                    functionResponse = await bookingsCollection.deleteOne({ userName, ...functionArgs });
+                    break;
+                case "update_booking":
+                    functionResponse = await bookingsCollection.updateOne(
+                        { userName, ...functionArgs.query },
+                        { $set: functionArgs.update }
+                    );
                     break;
                 default:
                     throw new Error("Unknown function call");
@@ -256,7 +217,7 @@ app.post('/chat', async (req, res) => {
     }
 });
 
-// Google Auth
+// Google Auth setup
 const SERVICE_ACCOUNT_KEY = {
     type: process.env.GOOGLE_TYPE,
     project_id: process.env.GOOGLE_PROJECT_ID,

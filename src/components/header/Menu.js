@@ -26,7 +26,6 @@ const Menu = ({ selectedUser, setSelectedUser }) => {
                 if (usersWithColors.length > 0 && !selectedUser) {
                     const initialUser = usersWithColors[0];
                     setSelectedUser(initialUser);
-                    console.log('Initial selected user:', initialUser);
                     await updateSelectedUser(initialUser);
                 }
             } catch (error) {

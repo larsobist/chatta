@@ -25,7 +25,7 @@ const Generative = ({ selectedUser }) => {
         try {
             const response = await fetch('http://localhost:8000/chat', {
                 method: 'POST',
-                body: JSON.stringify({ text, user: selectedUser.name }),
+                body: JSON.stringify({ text }),
                 headers: { 'Content-Type': 'application/json' }
             });
             const data = await response.json();

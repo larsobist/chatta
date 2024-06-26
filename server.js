@@ -103,8 +103,8 @@ app.post('/chat', async (req, res) => {
                 parameters: {
                     type: "object",
                     properties: {
-                        timeSlot: { type: "string" },
-                        date: { type: "string" }
+                        date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
+                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
                     },
                     required: []
                 }
@@ -115,11 +115,11 @@ app.post('/chat', async (req, res) => {
                 parameters: {
                     type: "object",
                     properties: {
-                        roomNumber: { type: "string" },
-                        date: { type: "string" },
-                        timeSlot: { type: "string" }
+                        roomNumber: { type: "string", description: "The room number for the booking" },
+                        date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
+                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
                     },
-                    required: ["roomNumber", "date", "timeSlot"]
+                    required: ["date", "timeSlot"]
                 }
             },
             {
@@ -128,8 +128,8 @@ app.post('/chat', async (req, res) => {
                 parameters: {
                     type: "object",
                     properties: {
-                        date: { type: "string" },
-                        timeSlot: { type: "string" }
+                        date: { type: "string", description: "The date of the booking to delete, e.g., 2024-06-26" },
+                        timeSlot: { type: "string", description: "The time of the booking to delete, e.g., 11:00, always in HH:MM format" }
                     },
                     required: ["date", "timeSlot"]
                 }
@@ -140,10 +140,10 @@ app.post('/chat', async (req, res) => {
                 parameters: {
                     type: "object",
                     properties: {
-                        date: { type: "string" },
-                        timeSlot: { type: "string" },
-                        new_date: { type: "string" },
-                        new_timeSlot: { type: "string" }
+                        date: { type: "string", description: "The current date of the booking, e.g., 2024-06-26" },
+                        timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:MM format" },
+                        new_date: { type: "string", description: "The new date of the booking, e.g., 2024-06-27" },
+                        new_timeSlot: { type: "string", description: "The new time of the booking, e.g., 12:00, always in HH:MM format" }
                     },
                     required: ["date", "timeSlot", "new_date", "new_timeSlot"]
                 }

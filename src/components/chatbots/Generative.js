@@ -7,17 +7,19 @@ const Generative = ({ selectedUser }) => {
     const chatBoxRef = useRef(null);
 
     useEffect(() => {
-        // Scroll to the bottom of the chat box when messages change
         if (chatBoxRef.current) {
             chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
         }
     }, [messages]);
 
+    useEffect(() => {
+        setMessages([{ type: 'bot', content: `Hi ${selectedUser.name}, how can I help you?` }]);
+    }, [selectedUser]);
+
     const getCompletion = async () => {
-        // Display user's message and add typing indicator
         const userMessage = { type: 'user', content: text };
         const typingIndicator = { type: 'bot', content: 'typing' };
-        setMessages([...messages, userMessage, typingIndicator]);
+        setMessages(prevMessages => [...prevMessages, userMessage, typingIndicator]);
         setText('');
 
         try {
@@ -27,18 +29,12 @@ const Generative = ({ selectedUser }) => {
                 headers: { 'Content-Type': 'application/json' }
             });
             const data = await response.json();
-            console.log(data);
-            // Remove the typing indicator before adding the bot response
-            const updatedMessages = [...messages, userMessage].filter(msg => msg.content !== 'typing');
-            if (data.message && data.message.content) {
-                setMessages([...updatedMessages, { type: 'bot', content: data.message.content }]);
-            } else {
-                setMessages([...updatedMessages, { type: 'bot', content: 'Unexpected response structure' }]);
-            }
+            setMessages(prevMessages => prevMessages.filter(msg => msg.content !== 'typing'));
+            setMessages(prevMessages => [...prevMessages, { type: 'bot', content: data.message || 'Unexpected response structure' }]);
         } catch (error) {
             console.error('Error fetching completion:', error);
-            const updatedMessages = [...messages, userMessage].filter(msg => msg.content !== 'typing');
-            setMessages([...updatedMessages, { type: 'bot', content: 'Error fetching completion' }]);
+            setMessages(prevMessages => prevMessages.filter(msg => msg.content !== 'typing'));
+            setMessages(prevMessages => [...prevMessages, { type: 'bot', content: 'Error fetching completion' }]);
         }
     }
 

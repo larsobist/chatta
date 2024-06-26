@@ -30,16 +30,19 @@ async function connectClient() {
 
 async function findBooking(query) {
     await connectClient();
+    console.log(JSON.stringify(query) + "HAHAA");
+
     const database = client.db('chattaDatabase');
     const collection = database.collection('bookings');
     return await collection.find(query).toArray();
 }
 
-async function makeBooking(newBooking) {
+async function createBooking(query) {
     await connectClient();
+    console.log(JSON.stringify(query));
     const database = client.db('chattaDatabase');
     const bookingsCollection = database.collection('bookings');
-    return await bookingsCollection.insertOne(newBooking);
+    return await bookingsCollection.insertOne(query);
 }
 
 async function deleteBooking(query) {
@@ -59,7 +62,6 @@ async function updateBooking(query, update) {
 async function fetchUsers() {
     try {
         await connectClient();
-        console.log('Connected to database');
         const database = client.db('chattaDatabase');
         const usersCollection = database.collection('users');
         return await usersCollection.find().toArray();
@@ -75,6 +77,24 @@ app.get('/users', async (req, res) => {
         res.json(users);
     } catch (error) {
         console.error('Error in /users endpoint:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/selectedUser', async (req, res) => {
+    const { selectedUser: user } = req.body;
+    let selectedUser;
+    try {
+        const users = await fetchUsers();
+        if (user && users.find(u => u.id === user.id)) {
+            selectedUser = user;
+            console.log(selectedUser)
+            res.status(200).json({message: 'Selected user updated successfully'});
+        } else {
+            res.status(400).json({message: 'Invalid user'});
+        }
+    } catch (error) {
+        console.error('Error in /selectedUser endpoint:', error);
         res.status(500).send('Internal Server Error');
     }
 });
@@ -120,9 +140,7 @@ const openai = new OpenAI({
 
 app.post('/chat', async (req, res) => {
     const textInput = req.body.text;
-    const userName = req.body.user; // Get the user from the request body
     const currentDate = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
-    console.log(userName)
 
     try {
         messageHistory = []; // Reset message history
@@ -139,109 +157,108 @@ app.post('/chat', async (req, res) => {
             content: textInput
         });
 
-        const completion = await openai.chat.completions.create({
-            messages: messageHistory,
-            model: "gpt-3.5-turbo",
-            functions: [
-                {
-                    name: "findBooking",
-                    parameters: {
-                        type: "object",
-                        properties: {
-                            userName: { type: "string" },
-                            timeSlot: { type: "string" },
-                            date: { type: "string" }
-                        },
-                        required: ["userName"]
-                    }
-                },
-                {
-                    name: "makeBooking",
-                    parameters: {
-                        type: "object",
-                        properties: {
-                            userName: { type: "string" },
-                            roomNumber: { type: "string" },
-                            date: { type: "string" },
-                            timeSlot: { type: "string" }
-                        },
-                        required: ["roomNumber", "date", "timeSlot"]
-                    }
-                },
-                {
-                    name: "deleteBooking",
-                    parameters: {
-                        type: "object",
-                        properties: {
-                            date: { type: "string" },
-                            timeSlot: { type: "string" }
-                        },
-                        required: ["date", "timeSlot"]
-                    }
-                },
-                {
-                    name: "updateBooking",
-                    parameters: {
-                        type: "object",
-                        properties: {
-                            date: { type: "string" },
-                            timeSlot: { type: "string" },
-                            new_date: { type: "string" },
-                            new_timeSlot: { type: "string" }
-                        },
-                        required: ["date", "timeSlot", "new_date", "new_timeSlot"]
-                    }
+        const tools = [
+            {
+                name: "find_booking",
+                description: "Find a reservation with the given params",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        userName: { type: "string" },
+                        timeSlot: { type: "string" },
+                        date: { type: "string" }
+                    },
+                    required: ["userName"]
                 }
-            ],
+            },
+            {
+                name: "create_booking",
+                description: "Create a reservation with the given params",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        userName: { type: "string" },
+                        roomNumber: { type: "string" },
+                        date: { type: "string" },
+                        timeSlot: { type: "string" }
+                    },
+                    required: ["userName", "roomNumber", "date", "timeSlot"]
+                }
+            },
+            {
+                name: "delete_booking",
+                description: "Delete a reservation with the given params",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        date: { type: "string" },
+                        timeSlot: { type: "string" }
+                    },
+                    required: ["date", "timeSlot"]
+                }
+            },
+            {
+                name: "update_booking",
+                description: "Update a reservation with the given params",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        date: { type: "string" },
+                        timeSlot: { type: "string" },
+                        new_date: { type: "string" },
+                        new_timeSlot: { type: "string" }
+                    },
+                    required: ["date", "timeSlot", "new_date", "new_timeSlot"]
+                }
+            }
+        ];
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: messageHistory,
+            functions: tools,
             function_call: "auto" // Let the model decide when to call a function
         });
 
-        const responseContent = completion.choices[0].message;
-        if (responseContent.function_call) {
-            const { name, arguments: args } = responseContent.function_call;
-            let result;
-            let naturalLanguageResponse = "";
+        const responseMessage = response.choices[0].message;
 
-            switch (name) {
-                case "findBooking":
-                    result = await findBooking({ ...JSON.parse(args), userName: userName });
-                    naturalLanguageResponse = result.length > 0 ?
-                        `Here are the bookings found: ${result.map(booking => `Room ${booking.roomNumber} booked by ${booking.userName} on ${booking.date} at ${booking.timeSlot}`).join(", ")}.` :
-                        "No bookings found.";
+        // Step 2: check if the model wanted to call a function
+        if (responseMessage.function_call) {
+            const functionName = responseMessage.function_call.name;
+            const functionArgs = JSON.parse(responseMessage.function_call.arguments);
+            let functionResponse;
+
+            switch (functionName) {
+                case "find_booking":
+                    functionResponse = await findBooking(functionArgs);
                     break;
-                case "makeBooking":
-                    const newBooking = JSON.parse(args);
-                    result = await makeBooking(newBooking);
-                    naturalLanguageResponse = `Your booking has been made successfully with ID: ${result.insertedId}.`;
+                case "create_booking":
+                    functionResponse = await createBooking(functionArgs);
                     break;
-                case "deleteBooking":
-                    const deleteQuery = { ...JSON.parse(args), userName: userName };
-                    console.log(deleteQuery)
-                    result = await deleteBooking(deleteQuery);
-                    naturalLanguageResponse = result.deletedCount > 0 ? "The booking has been deleted successfully." : "No booking was found to delete.";
+                case "update_booking":
+                    functionResponse = await updateBooking(functionArgs.query, functionArgs.update);
                     break;
-                case "updateBooking":
-                    const { date, timeSlot, new_date, new_timeSlot } = JSON.parse(args);
-                    result = await updateBooking({ userName: userName, date, timeSlot }, { date: new_date, timeSlot: new_timeSlot });
-                    naturalLanguageResponse = result.matchedCount > 0 ? "The booking has been updated successfully." : "No booking was found to update.";
+                case "delete_booking":
+                    functionResponse = await deleteBooking(functionArgs);
                     break;
                 default:
-                    console.log("Default Case ")
+                    throw new Error("Unknown function call");
             }
 
             messageHistory.push({
-                role: "assistant",
-                content: naturalLanguageResponse
+                role: "function",
+                name: functionName,
+                content: JSON.stringify(functionResponse)
             });
 
-            res.send({ message: { content: naturalLanguageResponse } });
+            const secondResponse = await openai.chat.completions.create({
+                model: "gpt-3.5-turbo",
+                messages: messageHistory,
+            });
+
+            res.json({ message: secondResponse.choices[0].message.content });
         } else {
-            messageHistory.push({
-                role: "assistant",
-                content: responseContent.content
-            });
-
-            res.send({ message: { content: responseContent.content } });
+            res.json({ message: responseMessage.content });
         }
     } catch (error) {
         console.error("Error processing request:", error);

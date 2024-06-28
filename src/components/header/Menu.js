@@ -11,7 +11,11 @@ const Menu = ({ selectedUser, setSelectedUser }) => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch('http://localhost:8000/users');
+                const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/users`, {
+                    headers: {
+                        'User-Agent': 'chatta/0.0.2'
+                    }
+                });
                 if (!response.ok) {
                     throw new Error('Failed to fetch users');
                 }
@@ -44,10 +48,11 @@ const Menu = ({ selectedUser, setSelectedUser }) => {
 
     const updateSelectedUser = async (user) => {
         try {
-            const response = await fetch('http://localhost:8000/selectedUser', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/selectedUser`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'chatta/0.0.2'
                 },
                 body: JSON.stringify({ selectedUser: user })
             });

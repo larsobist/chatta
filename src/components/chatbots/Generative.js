@@ -23,10 +23,12 @@ const Generative = ({ selectedUser }) => {
         setText('');
 
         try {
-            const response = await fetch('http://localhost:8000/chat', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/openai`, {
                 method: 'POST',
                 body: JSON.stringify({ text }),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json',
+                    'User-Agent': 'chatta/0.0.2'
+                }
             });
             const data = await response.json();
             setMessages(prevMessages => prevMessages.filter(msg => msg.content !== 'typing'));

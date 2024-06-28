@@ -18,7 +18,11 @@ const Rule = ({ selectedUser }) => {
     useEffect(() => {
         const fetchToken = async () => {
             try {
-                const response = await fetch('http://localhost:8000/get-token');
+                const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/get-token`, {
+                    headers: {
+                        'User-Agent': 'chatta/0.0.2'
+                    }
+                });
                 if (!response.ok) {
                     throw new Error('Failed to fetch access token');
                 }

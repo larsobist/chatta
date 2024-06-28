@@ -6,7 +6,7 @@ const { OpenAI } = require('openai');
 const { GoogleAuth } = require('google-auth-library');
 
 const app = express();
-const PORT = 8000;
+const PORT = 8080;
 
 app.use(express.json());
 app.use(cors());
@@ -65,14 +65,6 @@ app.post('/selectedUser', async (req, res) => {
     }
 });
 
-// OpenAI setup
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-
-// In-memory message history
-let messageHistory = [];
-
 const findBooking = async (userName, functionArgs) => {
     await connectClient();
     const bookingsCollection = getCollection('bookings');
@@ -110,7 +102,15 @@ const deleteBooking = async (userName, functionArgs) => {
     return result;
 }
 
-app.post('/chat', async (req, res) => {
+// OpenAI setup
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
+// In-memory message history
+let messageHistory = [];
+
+app.post('/openai', async (req, res) => {
     const textInput = req.body.text;
     const currentDate = new Date().toISOString().split('T')[0];
 
@@ -284,6 +284,44 @@ app.get('/get-token', async (req, res) => {
     } catch (error) {
         console.error('Error generating access token:', error);
         res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/test', (req, res) => {
+    const data = req.body;
+    console.log(JSON.stringify(data));
+
+    res.json({
+        fulfillment_response: {
+            messages: [
+                {
+                    text: {
+                        text: ['This is a sample response from webhook.']
+                    }
+                }
+            ]
+        }
+    });
+});
+
+app.post('/dialogflow', (req, res) => {
+    const intentName = req.body.queryResult.intent.displayName;
+
+    switch (intentName) {
+        case 'findBooking':
+            console.log()
+            findBooking(req, res);
+            break;
+        case 'createBooking':
+            createBooking(req, res);
+            break;
+        case 'cancelBooking':
+            deleteBooking(req, res);
+            break;
+        default:
+            res.json({
+                fulfillmentText: `Intent ${intentName} not handled in the webhook.`
+            });
     }
 });
 

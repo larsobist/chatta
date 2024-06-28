@@ -6,7 +6,7 @@ const { OpenAI } = require('openai');
 const { GoogleAuth } = require('google-auth-library');
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = 8000;
 
 app.use(express.json());
 app.use(cors());
@@ -73,6 +73,43 @@ const openai = new OpenAI({
 // In-memory message history
 let messageHistory = [];
 
+const findBooking = async (userName, functionArgs) => {
+    await connectClient();
+    const bookingsCollection = getCollection('bookings');
+    const query = { userName: userName, ...functionArgs };
+    const result = await bookingsCollection.find(query).toArray();
+    console.log('findBooking result:', result);
+    return result;
+}
+
+
+const createBooking = async (userName, functionArgs) => {
+    await connectClient();
+    const bookingsCollection = getCollection('bookings');
+    const result = await bookingsCollection.insertOne({ userName, ...functionArgs });
+    console.log('createBooking result:', result);
+    return result;
+}
+
+const updateBooking = async (userName, functionArgs) => {
+    await connectClient();
+    const bookingsCollection = getCollection('bookings');
+    const result = await bookingsCollection.updateOne(
+        { userName, ...functionArgs.query },
+        { $set: functionArgs.update }
+    );
+    console.log('updateBooking result:', result);
+    return result;
+}
+
+const deleteBooking = async (userName, functionArgs) => {
+    await connectClient();
+    const bookingsCollection = getCollection('bookings');
+    const result = await bookingsCollection.deleteOne({ userName, ...functionArgs });
+    console.log('deleteBooking result:', result);
+    return result;
+}
+
 app.post('/chat', async (req, res) => {
     const textInput = req.body.text;
     const currentDate = new Date().toISOString().split('T')[0];
@@ -81,8 +118,6 @@ app.post('/chat', async (req, res) => {
         if (!selectedUser) {
             return res.status(400).json({ message: 'No user selected. Please select a user first.' });
         }
-
-        const userName = selectedUser.name;
 
         if (messageHistory.length === 0) {
             messageHistory.push({
@@ -98,54 +133,66 @@ app.post('/chat', async (req, res) => {
 
         const tools = [
             {
-                name: "find_booking",
-                description: "Find a reservation with the given params",
-                parameters: {
-                    type: "object",
-                    properties: {
-                        date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
-                    },
-                    required: []
+                type: "function",
+                function: {
+                    name: "find_booking",
+                    description: "Find a reservation with the given params",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
+                            timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
+                        },
+                        required: []
+                    }
                 }
             },
             {
-                name: "create_booking",
-                description: "Create a reservation with the given params",
-                parameters: {
-                    type: "object",
-                    properties: {
-                        roomNumber: { type: "string", description: "The room number for the booking" },
-                        date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
-                    },
-                    required: ["date", "timeSlot"]
+                type: "function",
+                function: {
+                    name: "create_booking",
+                    description: "Create a reservation with the given params",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            roomNumber: { type: "string", description: "The room number for the booking" },
+                            date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
+                            timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
+                        },
+                        required: ["date", "timeSlot"]
+                    }
                 }
             },
             {
-                name: "delete_booking",
-                description: "Delete a reservation with the given params",
-                parameters: {
-                    type: "object",
-                    properties: {
-                        date: { type: "string", description: "The date of the booking to delete, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The time of the booking to delete, e.g., 11:00, always in HH:MM format" }
-                    },
-                    required: ["date", "timeSlot"]
+                type: "function",
+                function: {
+                    name: "delete_booking",
+                    description: "Delete a reservation with the given params",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            date: { type: "string", description: "The date of the booking to delete, e.g., 2024-06-26" },
+                            timeSlot: { type: "string", description: "The time of the booking to delete, e.g., 11:00, always in HH:MM format" }
+                        },
+                        required: ["date", "timeSlot"]
+                    }
                 }
             },
             {
-                name: "update_booking",
-                description: "Update a reservation with the given params",
-                parameters: {
-                    type: "object",
-                    properties: {
-                        date: { type: "string", description: "The current date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:MM format" },
-                        new_date: { type: "string", description: "The new date of the booking, e.g., 2024-06-27" },
-                        new_timeSlot: { type: "string", description: "The new time of the booking, e.g., 12:00, always in HH:MM format" }
-                    },
-                    required: ["date", "timeSlot", "new_date", "new_timeSlot"]
+                type: "function",
+                function: {
+                    name: "update_booking",
+                    description: "Update a reservation with the given params",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            date: { type: "string", description: "The current date of the booking, e.g., 2024-06-26" },
+                            timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:MM format" },
+                            new_date: { type: "string", description: "The new date of the booking, e.g., 2024-06-27" },
+                            new_timeSlot: { type: "string", description: "The new time of the booking, e.g., 12:00, always in HH:MM format" }
+                        },
+                        required: ["date", "timeSlot", "new_date", "new_timeSlot"]
+                    }
                 }
             }
         ];
@@ -153,45 +200,38 @@ app.post('/chat', async (req, res) => {
         const response = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: messageHistory,
-            functions: tools,
-            function_call: "auto"
+            tools: tools,
+            tool_choice: "auto"
         });
 
         const responseMessage = response.choices[0].message;
 
-        if (responseMessage.function_call) {
-            const functionName = responseMessage.function_call.name;
-            const functionArgs = JSON.parse(responseMessage.function_call.arguments);
-            let functionResponse;
-
-            await connectClient();
-            const bookingsCollection = getCollection('bookings');
-
-            switch (functionName) {
-                case "find_booking":
-                    functionResponse = await bookingsCollection.find({ userName, ...functionArgs }).toArray();
-                    break;
-                case "create_booking":
-                    functionResponse = await bookingsCollection.insertOne({ userName, ...functionArgs });
-                    break;
-                case "delete_booking":
-                    functionResponse = await bookingsCollection.deleteOne({ userName, ...functionArgs });
-                    break;
-                case "update_booking":
-                    functionResponse = await bookingsCollection.updateOne(
-                        { userName, ...functionArgs.query },
-                        { $set: functionArgs.update }
-                    );
-                    break;
-                default:
-                    throw new Error("Unknown function call");
+        const toolCalls = responseMessage.tool_calls;
+        if (toolCalls) {
+            const availableFunctions = {
+                find_booking: findBooking,
+                create_booking: createBooking,
+                delete_booking: deleteBooking,
+                update_booking: updateBooking
             }
 
-            messageHistory.push({
-                role: "function",
-                name: functionName,
-                content: JSON.stringify(functionResponse)
-            });
+            messageHistory.push(responseMessage)
+
+            for (const toolCall of toolCalls) {
+                const functionName = toolCall.function.name;
+                const functionToCall = availableFunctions[functionName];
+                const functionArgs = JSON.parse(toolCall.function.arguments);
+                const functionResponse = await functionToCall(
+                    selectedUser.name,  // Correctly passing the userName
+                    functionArgs
+                );
+                messageHistory.push({
+                    tool_call_id: toolCall.id,
+                    role: "tool",
+                    name: functionName,
+                    content: JSON.stringify(functionResponse),
+                }); // extend conversation with function response
+            }
 
             const secondResponse = await openai.chat.completions.create({
                 model: "gpt-3.5-turbo",

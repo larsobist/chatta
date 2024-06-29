@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './Chatbots.scss';
+import {Button, TextField} from "@mui/material";
 
 const Rule = ({ selectedUser }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [accessToken, setAccessToken] = useState(null);
+    const [showFadeOut, setShowFadeOut] = useState(false); // New state for fade-out visibility
     const chatBoxRef = useRef(null);
 
     const sessionId = uuidv4();
@@ -34,14 +36,15 @@ const Rule = ({ selectedUser }) => {
     useEffect(() => {
         if (chatBoxRef.current) {
             chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+            setShowFadeOut(chatBoxRef.current.scrollHeight > chatBoxRef.current.clientHeight);
         }
     }, [messages]);
 
     const handleSend = async () => {
         if (input.trim() === '') return;
 
-        const newMessages = [...messages, { text: input, sender: 'user' }];
-        setMessages([...newMessages, { text: 'typing', sender: 'bot' }]);
+        const newMessages = [...messages, { text: input, sender: 'user' }, { text: 'typing', sender: 'bot' }];
+        setMessages(newMessages);
         setInput('');
 
         const requestBody = {
@@ -52,8 +55,6 @@ const Rule = ({ selectedUser }) => {
                 languageCode: process.env.REACT_APP_GOOGLE_LANGUAGE_CODE,
             },
         };
-
-        console.log('Sending request to Dialogflow:', requestBody);
 
         try {
             const response = await fetch(
@@ -81,17 +82,22 @@ const Rule = ({ selectedUser }) => {
                 .map(msg => msg.text.text)
                 .join('\n');
 
-            setMessages(prevMessages => prevMessages.filter(msg => msg.text !== 'typing'));
-            setMessages([...newMessages, { text: botMessage, sender: 'bot' }]);
+            setMessages(prevMessages => [
+                ...prevMessages.slice(0, -1), // Remove the 'typing' indicator
+                { text: botMessage, sender: 'bot' }
+            ]);
         } catch (error) {
             console.error('Error communicating with Dialogflow:', error);
-            setMessages(prevMessages => prevMessages.filter(msg => msg.text !== 'typing'));
-            setMessages([...newMessages, { text: 'Error fetching completion', sender: 'bot' }]);
+            setMessages(prevMessages => [
+                ...prevMessages.slice(0, -1), // Remove the 'typing' indicator
+                { text: 'Error communicating with Dialogflow', sender: 'bot' }
+            ]);
         }
     };
 
     return (
         <div className="chat-container">
+            {showFadeOut && <div className="fade-out"></div>}
             <div className="chat-box" ref={chatBoxRef}>
                 {messages.map((message, index) => (
                     <div
@@ -108,19 +114,19 @@ const Rule = ({ selectedUser }) => {
                 ))}
             </div>
             <div className="input-container">
-                <input
-                    type="text"
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyPress={e => e.key === 'Enter' ? handleSend() : null}
-                    placeholder="Type your message here..."
+                <TextField id="outlined-basic"
+                           placeholder="Schreib deine Nachricht hier..."
+                           variant="outlined"
+                           value={input}
+                           onChange={e => setInput(e.target.value)}
+                           onKeyPress={e => e.key === 'Enter' ? handleSend() : null}
+                           className="input-field"
                 />
-                <button
-                    onClick={handleSend}
-                    style={{ backgroundColor: selectedUser.color }}
-                >
-                    Send
-                </button>
+                <Button variant="contained"
+                        onClick={handleSend}
+                        style={{ backgroundColor: selectedUser.color }}
+                        className="send-button"
+                >Senden</Button>
             </div>
         </div>
     );

@@ -55,7 +55,7 @@ app.post('/selectedUser', async (req, res) => {
         const users = await usersCollection.find().toArray();
         if (user && users.find(u => u.id === user.id)) {
             selectedUser = user;
-            res.status(200).json({ message: 'Selected user updated successfully' });
+            res.status(200).json({ message: 'Selected user updated successfully', user: selectedUser });
         } else {
             res.status(400).json({ message: 'Invalid user' });
         }
@@ -64,6 +64,20 @@ app.post('/selectedUser', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+app.post('/user-bookings', async (req, res) => {
+    const { selectedUser: user } = req.body;
+    try {
+        await connectClient();
+        const bookingsCollection = getCollection('bookings');
+        const bookings = await bookingsCollection.find({ userName: user }).toArray();
+        res.json(bookings);
+    } catch (error) {
+        console.error('Error fetching bookings:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 
 const findBooking = async (userName, functionArgs) => {
     await connectClient();

@@ -16,7 +16,7 @@ const Chatbots = ({ selectedUser }) => {
     return (
         <div>
             <div className="info-container">
-                <h1>Chatbots {selectedUser.name}</h1>
+                <h1>Chatbots</h1>
                 <ToggleButtonGroup
                     value={chatbot}
                     exclusive

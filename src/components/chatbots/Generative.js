@@ -1,53 +1,61 @@
-import React, { useState, useRef, useEffect } from 'react';
-import './Chatbots.scss';  // Import the CSS file for styling
+import React, {useState, useRef, useEffect} from 'react';
+import './Chatbots.scss';
+import {Button, TextField} from "@mui/material";  // Import the CSS file for styling
 
-const Generative = ({ selectedUser }) => {
+const Generative = ({selectedUser}) => {
     const [text, setText] = useState('');
-    const [messages, setMessages] = useState([{ type: 'bot', content: `Hi ${selectedUser.name}, how can I help you?` }]);
+    const [messages, setMessages] = useState([{type: 'bot', content: `Hi ${selectedUser.name}, how can I help you?`}]);
+    const [showFadeOut, setShowFadeOut] = useState(false); // New state for fade-out visibility
     const chatBoxRef = useRef(null);
 
     useEffect(() => {
         if (chatBoxRef.current) {
             chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+            setShowFadeOut(chatBoxRef.current.scrollHeight > chatBoxRef.current.clientHeight);
         }
     }, [messages]);
 
     useEffect(() => {
-        setMessages([{ type: 'bot', content: `Hi ${selectedUser.name}, how can I help you?` }]);
+        setMessages([{type: 'bot', content: `Hi ${selectedUser.name}, how can I help you?`}]);
     }, [selectedUser]);
 
     const getCompletion = async () => {
-        const userMessage = { type: 'user', content: text };
-        const typingIndicator = { type: 'bot', content: 'typing' };
+        const userMessage = {type: 'user', content: text};
+        const typingIndicator = {type: 'bot', content: 'typing'};
         setMessages(prevMessages => [...prevMessages, userMessage, typingIndicator]);
         setText('');
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/openai`, {
+            const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/openai`, {
                 method: 'POST',
-                body: JSON.stringify({ text }),
-                headers: { 'Content-Type': 'application/json',
+                body: JSON.stringify({text}),
+                headers: {
+                    'Content-Type': 'application/json',
                     'User-Agent': 'chatta/0.0.2'
                 }
             });
             const data = await response.json();
             setMessages(prevMessages => prevMessages.filter(msg => msg.content !== 'typing'));
-            setMessages(prevMessages => [...prevMessages, { type: 'bot', content: data.message || 'Unexpected response structure' }]);
+            setMessages(prevMessages => [...prevMessages, {
+                type: 'bot',
+                content: data.message || 'Unexpected response structure'
+            }]);
         } catch (error) {
             console.error('Error fetching completion:', error);
             setMessages(prevMessages => prevMessages.filter(msg => msg.content !== 'typing'));
-            setMessages(prevMessages => [...prevMessages, { type: 'bot', content: 'Error fetching completion' }]);
+            setMessages(prevMessages => [...prevMessages, {type: 'bot', content: 'Error fetching completion'}]);
         }
     }
 
     return (
         <div className="chat-container">
+            {showFadeOut && <div className="fade-out"></div>}
             <div className="chat-box" ref={chatBoxRef}>
                 {messages.map((message, index) => (
                     <div
                         key={index}
                         className={`chat-message ${message.type}`}
-                        style={message.type === 'user' ? { backgroundColor: selectedUser.color } : {}}
+                        style={message.type === 'user' ? {backgroundColor: selectedUser.color} : {}}
                     >
                         {message.content === 'typing' ? (
                             <div className="typing-indicator">
@@ -58,19 +66,17 @@ const Generative = ({ selectedUser }) => {
                 ))}
             </div>
             <div className="input-container">
-                <input
-                    type="text"
-                    value={text}
-                    onChange={e => setText(e.target.value)}
-                    onKeyPress={e => e.key === 'Enter' ? getCompletion() : null}
-                    placeholder="Type your message here..."
+                <TextField id="input" placeholder="Schreib deine Nachricht hier..."
+                           variant="outlined" value={text}
+                           onChange={e => setText(e.target.value)}
+                           onKeyPress={e => e.key === 'Enter' ? getCompletion() : null}
+                           className="input-field"
                 />
-                <button
-                    onClick={getCompletion}
-                    style={{ backgroundColor: selectedUser.color }}
-                >
-                    Send
-                </button>
+                <Button variant="contained"
+                        onClick={getCompletion}
+                        style={{backgroundColor: selectedUser.color}}
+                        className="send-button"
+                >Senden</Button>
             </div>
         </div>
     );

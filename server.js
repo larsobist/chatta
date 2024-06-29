@@ -260,7 +260,7 @@ app.post('/openai', async (req, res) => {
 // Google Auth setup
 const SERVICE_ACCOUNT_KEY = {
     type: process.env.GOOGLE_TYPE,
-    project_id: process.env.GOOGLE_PROJECT_ID,
+    project_id: process.env.REACT_APP_GOOGLE_PROJECT_ID,
     private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
     private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     client_email: process.env.GOOGLE_CLIENT_EMAIL,
@@ -287,36 +287,67 @@ app.get('/get-token', async (req, res) => {
     }
 });
 
-app.post('/test', (req, res) => {
+app.post('/dialogflow', (req, res) => {
     const data = req.body;
     console.log(JSON.stringify(data));
-
-    res.json({
-        fulfillment_response: {
-            messages: [
-                {
-                    text: {
-                        text: ['This is a sample response from webhook.']
-                    }
-                }
-            ]
-        }
-    });
-});
-
-app.post('/dialogflow', (req, res) => {
-    const intentName = req.body.queryResult.intent.displayName;
+    const intentName = data.fulfillmentInfo.tag;
+    console.log(intentName);
 
     switch (intentName) {
+        case 'welcome':
+            res.json({
+                fulfillment_response: {
+                    messages: [
+                        {
+                            text: {
+                                text: ['This is a sample response WELCOME.']
+                            }
+                        }
+                    ]
+                }
+            });
+            break;
         case 'findBooking':
-            console.log()
-            findBooking(req, res);
+            //findBooking(req, res);
+            res.json({
+                fulfillment_response: {
+                    messages: [
+                        {
+                            text: {
+                                text: ['This is a sample response FINDING.']
+                            }
+                        }
+                    ]
+                }
+            });
             break;
         case 'createBooking':
-            createBooking(req, res);
+            //createBooking(req, res);
+            res.json({
+                fulfillment_response: {
+                    messages: [
+                        {
+                            text: {
+                                text: ['This is a sample response BOOKING.']
+                            }
+                        }
+                    ]
+                }
+            });
             break;
-        case 'cancelBooking':
-            deleteBooking(req, res);
+        case 'delteBooking':
+            //deleteBooking(req, res);
+            res.json({
+                fulfillment_response: {
+                    messages: [
+                        {
+                            text: {
+                                text: ['This is a sample response DELTE.']
+                            }
+                        }
+                    ]
+                }
+            });
             break;
         default:
             res.json({

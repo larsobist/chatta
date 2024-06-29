@@ -2,11 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './Chatbots.scss';
 
-const PROJECT_ID = 'masterthesis-413319';
-const AGENT_ID = 'b56dc6e2-c2e6-416f-b1e4-31ea739ff566';
-const LOCATION = 'europe-west3';
-const LANGUAGE_CODE = 'de';
-
 const Rule = ({ selectedUser }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -36,11 +31,17 @@ const Rule = ({ selectedUser }) => {
         fetchToken();
     }, []);
 
+    useEffect(() => {
+        if (chatBoxRef.current) {
+            chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+        }
+    }, [messages]);
+
     const handleSend = async () => {
         if (input.trim() === '') return;
 
         const newMessages = [...messages, { text: input, sender: 'user' }];
-        setMessages(newMessages);
+        setMessages([...newMessages, { text: 'typing', sender: 'bot' }]);
         setInput('');
 
         const requestBody = {
@@ -48,7 +49,7 @@ const Rule = ({ selectedUser }) => {
                 text: {
                     text: input,
                 },
-                languageCode: LANGUAGE_CODE,
+                languageCode: process.env.REACT_APP_GOOGLE_LANGUAGE_CODE,
             },
         };
 
@@ -56,7 +57,7 @@ const Rule = ({ selectedUser }) => {
 
         try {
             const response = await fetch(
-                `https://${LOCATION}-dialogflow.googleapis.com/v3/projects/${PROJECT_ID}/locations/${LOCATION}/agents/${AGENT_ID}/sessions/${sessionId}:detectIntent`,
+                `https://${process.env.REACT_APP_GOOGLE_LOCATION}-dialogflow.googleapis.com/v3/projects/${process.env.REACT_APP_GOOGLE_PROJECT_ID}/locations/${process.env.REACT_APP_GOOGLE_LOCATION}/agents/${process.env.REACT_APP_GOOGLE_AGENT_ID}/sessions/${sessionId}:detectIntent`,
                 {
                     method: 'POST',
                     headers: {
@@ -80,9 +81,12 @@ const Rule = ({ selectedUser }) => {
                 .map(msg => msg.text.text)
                 .join('\n');
 
+            setMessages(prevMessages => prevMessages.filter(msg => msg.text !== 'typing'));
             setMessages([...newMessages, { text: botMessage, sender: 'bot' }]);
         } catch (error) {
             console.error('Error communicating with Dialogflow:', error);
+            setMessages(prevMessages => prevMessages.filter(msg => msg.text !== 'typing'));
+            setMessages([...newMessages, { text: 'Error fetching completion', sender: 'bot' }]);
         }
     };
 

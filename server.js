@@ -111,6 +111,7 @@ const updateBooking = async (userName, functionArgs) => {
 const deleteBooking = async (userName, functionArgs) => {
     await connectClient();
     const bookingsCollection = getCollection('bookings');
+    console.log(functionArgs, userName)
     const result = await bookingsCollection.deleteOne({ userName, ...functionArgs });
     console.log('deleteBooking result:', result);
     return result;
@@ -185,10 +186,11 @@ app.post('/openai', async (req, res) => {
                     parameters: {
                         type: "object",
                         properties: {
+                            roomNumber: { type: "string", description: "The roomnumber of the booking to delete, e.g., 101" },
                             date: { type: "string", description: "The date of the booking to delete, e.g., 2024-06-26" },
                             timeSlot: { type: "string", description: "The time of the booking to delete, e.g., 11:00, always in HH:MM format" }
                         },
-                        required: ["date", "timeSlot"]
+                        required: ["date"]
                     }
                 }
             },
@@ -200,10 +202,12 @@ app.post('/openai', async (req, res) => {
                     parameters: {
                         type: "object",
                         properties: {
+                            roomNumber: { type: "string", description: "The roomnumber of the booking to delete, e.g., 101" },
                             date: { type: "string", description: "The current date of the booking, e.g., 2024-06-26" },
                             timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:MM format" },
-                            new_date: { type: "string", description: "The new date of the booking, e.g., 2024-06-27" },
-                            new_timeSlot: { type: "string", description: "The new time of the booking, e.g., 12:00, always in HH:MM format" }
+                            newRoomNumber: { type: "string", description: "The updated roomnumber of the booking to delete, e.g., 101" },
+                            new_date: { type: "string", description: "The updated date of the booking, e.g., 2024-06-27" },
+                            new_timeSlot: { type: "string", description: "The updated time of the booking, e.g., 12:00, always in HH:MM format" }
                         },
                         required: ["date", "timeSlot", "new_date", "new_timeSlot"]
                     }
@@ -301,67 +305,143 @@ app.get('/get-token', async (req, res) => {
     }
 });
 
-app.post('/dialogflow', (req, res) => {
+app.post('/dialogflow', async (req, res) => {
     const data = req.body;
-    console.log(JSON.stringify(data));
     const intentName = data.fulfillmentInfo.tag;
     console.log(intentName);
 
+    const user = selectedUser.name;
+    const dateObj = data.sessionInfo.parameters.date || {};
+
+    const formattedDate = dateObj.year ? `${dateObj.year}-${String(dateObj.month).padStart(2, '0')}-${String(dateObj.day).padStart(2, '0')}` : null;
+
+    const functionArgs = {};
+    if (formattedDate) functionArgs.date = formattedDate;
+    if (data.sessionInfo.parameters.room) functionArgs.roomNumber = data.sessionInfo.parameters.room.toString();
+    if (data.sessionInfo.parameters.timeslot) functionArgs.timeSlot = data.sessionInfo.parameters.timeslot;
+
     switch (intentName) {
-        case 'welcome':
-            res.json({
-                fulfillment_response: {
-                    messages: [
-                        {
-                            text: {
-                                text: ['This is a sample response WELCOME.']
-                            }
-                        }
-                    ]
-                }
-            });
-            break;
         case 'findBooking':
-            //findBooking(req, res);
-            res.json({
-                fulfillment_response: {
-                    messages: [
-                        {
-                            text: {
-                                text: ['This is a sample response FINDING.']
+            console.log("FIND")
+            try {
+                const findResult = await findBooking(user, functionArgs);
+                const bookingsText = findResult.map(booking =>
+                    `Room: ${booking.roomNumber}, Date: ${booking.date}, Time Slot: ${booking.timeSlot}`
+                ).join('\n');
+
+                res.json({
+                    fulfillment_response: {
+                        messages: [
+                            {
+                                text: {
+                                    text: [`Your bookings:\n${bookingsText}`]
+                                }
                             }
-                        }
-                    ]
-                }
-            });
+                        ]
+                    }
+                });
+            } catch (error) {
+                console.error('Error finding booking:', error);
+                res.json({
+                    fulfillment_response: {
+                        messages: [
+                            {
+                                text: {
+                                    text: ['Failed to find booking.']
+                                }
+                            }
+                        ]
+                    }
+                });
+            }
             break;
         case 'createBooking':
-            //createBooking(req, res);
-            res.json({
-                fulfillment_response: {
-                    messages: [
-                        {
-                            text: {
-                                text: ['This is a sample response BOOKING.']
+            try {
+                const bookingResult = await createBooking(user, functionArgs);
+                res.json({
+                    fulfillment_response: {
+                        messages: [
+                            {
+                                text: {
+                                    text: ['Booking created successfully.']
+                                }
                             }
-                        }
-                    ]
-                }
-            });
+                        ]
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating booking:', error);
+                res.json({
+                    fulfillment_response: {
+                        messages: [
+                            {
+                                text: {
+                                    text: ['Failed to create booking.']
+                                }
+                            }
+                        ]
+                    }
+                });
+            }
             break;
-        case 'delteBooking':
-            //deleteBooking(req, res);
-            res.json({
-                fulfillment_response: {
-                    messages: [
-                        {
-                            text: {
-                                text: ['This is a sample response DELTE.']
+        case 'deleteBooking':
+            try {
+                const deleteResult = await deleteBooking(user, functionArgs);
+                res.json({
+                    fulfillment_response: {
+                        messages: [
+                            {
+                                text: {
+                                    text: ['Booking deleted successfully.']
+                                }
                             }
-                        }
-                    ]
-                }
-            });
+                        ]
+                    }
+                });
+            } catch (error) {
+                console.error('Error deleting booking:', error);
+                res.json({
+                    fulfillment_response: {
+                        messages: [
+                            {
+                                text: {
+                                    text: ['Failed to delete booking.']
+                                }
+                            }
+                        ]
+                    }
+                });
+            }
+            break;
+        case 'updateBooking':
+            console.log(functionArgs);
+            try {
+                const updateResult = await updateBooking(user, functionArgs);
+                res.json({
+                    fulfillment_response: {
+                        messages: [
+                            {
+                                text: {
+                                    text: ['Booking updated successfully.']
+                                }
+                            }
+                        ]
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating booking:', error);
+                res.json({
+                    fulfillment_response: {
+                        messages: [
+                            {
+                                text: {
+                                    text: ['Failed to update booking.']
+                                }
+                            }
+                        ]
+                    }
+                });
+            }
             break;
         default:
             res.json({
@@ -369,6 +449,7 @@ app.post('/dialogflow', (req, res) => {
             });
     }
 });
+
 
 app.listen(PORT, () => {
     console.log(`App listening on ${PORT}`);

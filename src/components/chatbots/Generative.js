@@ -1,6 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react';
 import './Chatbots.scss';
-import {Button, TextField} from "@mui/material";  // Import the CSS file for styling
+import {Button, TextField} from "@mui/material";
+import SendRoundedIcon from "@mui/icons-material/SendRounded";  // Import the CSS file for styling
 
 const Generative = ({selectedUser}) => {
     const [text, setText] = useState('');
@@ -76,7 +77,7 @@ const Generative = ({selectedUser}) => {
                         onClick={getCompletion}
                         style={{backgroundColor: selectedUser.color}}
                         className="send-button"
-                >Senden</Button>
+                ><SendRoundedIcon></SendRoundedIcon></Button>
             </div>
         </div>
     );

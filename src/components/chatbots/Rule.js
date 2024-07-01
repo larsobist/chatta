@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './Chatbots.scss';
 import {Button, TextField} from "@mui/material";
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
 
 const Rule = ({ selectedUser }) => {
     const [messages, setMessages] = useState([]);
@@ -126,7 +127,7 @@ const Rule = ({ selectedUser }) => {
                         onClick={handleSend}
                         style={{ backgroundColor: selectedUser.color }}
                         className="send-button"
-                >Senden</Button>
+                ><SendRoundedIcon></SendRoundedIcon></Button>
             </div>
         </div>
     );

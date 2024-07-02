@@ -1,0 +1,29 @@
+{
+  "name": "chatta-backend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "google-auth-library": "^9.11.0",
+    "mongodb": "^6.7.0",
+    "openai": "^4.52.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "eslint": "^8.30.0",
+    "eslint-config-react-app": "^7.0.1"
+  },
+  "scripts": {
+    "backend": "nodemon server.js",
+    "dev": "nodemon server.js",
+    "lint": "eslint . --ext .js,.jsx"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  }
+}

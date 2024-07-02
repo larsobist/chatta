@@ -30,6 +30,7 @@ const Generative = ({selectedUser}) => {
             const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/openai`, {
                 method: 'POST',
                 body: JSON.stringify({ selectedUser: selectedUser, text }),
+                //body: JSON.stringify({ text }),
                 headers: {
                     'Content-Type': 'application/json',
                     'User-Agent': 'chatta/0.0.2'

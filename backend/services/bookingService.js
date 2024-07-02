@@ -1,51 +1,94 @@
 const { connectClient, getCollection } = require('../config/database');
+const { getCurrentUser } = require('../controllers/userController'); // Pfad anpassen
 
-const getUserBookings = async (userName) => {
+const connectAndGetCollection = async (collectionName) => {
     await connectClient();
-    const bookingsCollection = getCollection('bookings');
-    return await bookingsCollection.find({ userName }).toArray();
+    return getCollection(collectionName);
 };
 
-const findBooking = async (userName, functionArgs) => {
-    await connectClient();
-    const bookingsCollection = getCollection('bookings');
-    const query = { userName: userName, ...functionArgs };
-    const result = await bookingsCollection.find(query).toArray();
-    console.log('findBooking result:', result);
-    return result;
-}
-
-const createBooking = async (userName, bookingDetails) => {
-    await connectClient();
-    const bookingsCollection = getCollection('bookings');
-    return await bookingsCollection.insertOne({ userName, ...bookingDetails });
+const getCurrentUsername = async () => {
+    const currentUser = await getCurrentUser();
+    return currentUser.name;
 };
 
-const updateBooking = async (userName, query) => {
-    await connectClient();
-
-    // Dynamically build the update object
-    let updateFields = {};
-    if (query.new_roomNumber) updateFields.roomNumber = query.new_roomNumber;
-    if (query.new_date) updateFields.date = query.new_date;
-    if (query.new_timeSlot) updateFields.timeSlot = query.new_timeSlot;
-
-    // Ensure updateFields is not empty before updating the document
-    if (Object.keys(updateFields).length === 0) {
-        throw new Error("No valid update fields provided");
+const getUserBookings = async () => {
+    const userName = await getCurrentUsername();
+    try {
+        const bookingsCollection = await connectAndGetCollection('bookings');
+        return await bookingsCollection.find({ userName }).toArray();
+    } catch (error) {
+        console.error('Error getting user bookings:', error);
+        throw error;
     }
-
-    const bookingsCollection = getCollection('bookings');
-    return await bookingsCollection.updateOne(
-        { userName, ...query },
-        { $set: updateFields }
-    );
 };
 
-const deleteBooking = async (userName, query) => {
-    await connectClient();
-    const bookingsCollection = getCollection('bookings');
-    return await bookingsCollection.deleteOne({ userName, ...query });
+const findBooking = async (functionArgs) => {
+    const userName = await getCurrentUsername();
+
+    try {
+        const bookingsCollection = await connectAndGetCollection('bookings');
+        const query = { userName, ...functionArgs };
+        const result = await bookingsCollection.find(query).toArray();
+        console.log('findBooking result:', result);
+        return result;
+    } catch (error) {
+        console.error('Error finding booking:', error);
+        throw error;
+    }
+};
+
+const createBooking = async (bookingDetails) => {
+    const userName = await getCurrentUsername();
+    try {
+        const bookingsCollection = await connectAndGetCollection('bookings');
+        return await bookingsCollection.insertOne({ userName, ...bookingDetails });
+    } catch (error) {
+        console.error('Error creating booking:', error);
+        throw error;
+    }
+};
+
+const updateBooking = async (query) => {
+    const userName = await getCurrentUsername();
+    try {
+        const bookingsCollection = await connectAndGetCollection('bookings');
+
+        // Extract old values from the query object
+        const { new_roomNumber, new_date, new_timeSlot, ...originalQuery } = query;
+
+        // Dynamically build the update object
+        let updateFields = {};
+        if (new_roomNumber) updateFields.roomNumber = new_roomNumber;
+        if (new_date) updateFields.date = new_date;
+        if (new_timeSlot) updateFields.timeSlot = new_timeSlot;
+
+        // Ensure updateFields is not empty before updating the document
+        if (Object.keys(updateFields).length === 0) {
+            throw new Error("No valid update fields provided");
+        }
+
+        console.log('Original query:', originalQuery);
+        console.log('Update fields:', updateFields);
+
+        return await bookingsCollection.updateOne(
+            { userName, ...originalQuery },
+            { $set: updateFields }
+        );
+    } catch (error) {
+        console.error('Error updating booking:', error);
+        throw error;
+    }
+};
+
+const deleteBooking = async (query) => {
+    const userName = await getCurrentUsername();
+    try {
+        const bookingsCollection = await connectAndGetCollection('bookings');
+        return await bookingsCollection.deleteOne({ userName, ...query });
+    } catch (error) {
+        console.error('Error deleting booking:', error);
+        throw error;
+    }
 };
 
 module.exports = { getUserBookings, findBooking, createBooking, updateBooking, deleteBooking };

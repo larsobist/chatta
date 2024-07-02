@@ -2,14 +2,9 @@ const openai = require('../config/openai');
 const { findBooking, createBooking, updateBooking, deleteBooking } = require('./bookingService');
 
 let messageHistory = [];
-let selectedUser = null;
 
-const handleOpenAIRequest = async (textInput, user) => {
+const handleOpenAIRequest = async (textInput) => {
     const currentDate = new Date().toISOString().split('T')[0];
-
-    if (!selectedUser) {
-        selectedUser = user;
-    }
 
     if (messageHistory.length === 0) {
         messageHistory.push({
@@ -117,7 +112,6 @@ const handleOpenAIRequest = async (textInput, user) => {
             const functionToCall = availableFunctions[functionName];
             const functionArgs = JSON.parse(toolCall.function.arguments);
             const functionResponse = await functionToCall(
-                selectedUser.name,
                 functionArgs
             );
             messageHistory.push({

@@ -13,15 +13,12 @@ const Overview = ({ selectedUser }) => {
 
     useEffect(() => {
         const fetchBookings = async () => {
-            if (!selectedUser?.name) return;
             try {
                 const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/user-bookings`, {
-                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'User-Agent': 'chatta/0.0.2'
                     },
-                    body: JSON.stringify({ selectedUser: selectedUser.name })
                 });
                 const data = await response.json();
 

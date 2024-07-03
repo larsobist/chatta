@@ -2,6 +2,11 @@ const { connectClient, getCollection } = require('../config/database');
 
 // Variable zum Speichern des ausgewählten Benutzers
 let currentUser;
+let io;  // Declare a variable to hold the io object
+
+const setSocket = (socketIo) => {
+    io = socketIo;
+};
 
 // Funktion zum Abrufen aller Benutzer
 const getUsers = async (req, res) => {
@@ -25,8 +30,9 @@ const updateSelectedUser = async (req, res) => {
         const users = await usersCollection.find().toArray();
         if (user && users.find(u => u.id === user.id)) {
             currentUser = user; // Setze die globale Variable "currentUser" direkt auf das Benutzerobjekt
-            console.log("USER");
-            console.log(currentUser);
+            if (io) {
+                io.emit('bookingChanged');
+            }
             res.status(200).json({ message: 'Selected user updated successfully', user: currentUser });
         } else {
             res.status(400).json({ message: 'Invalid user' });
@@ -69,4 +75,4 @@ const getCurrentUser = async () => {
 };
 
 // Export der Funktionen als Controller-Methoden
-module.exports = { getUsers, updateSelectedUser, getUserBookings, getCurrentUser };
+module.exports = { getUsers, updateSelectedUser, getUserBookings, getCurrentUser, setSocket };

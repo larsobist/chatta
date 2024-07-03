@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import Avatar from "@mui/material/Avatar";
 import { blue, cyan, indigo, lightBlue } from "@mui/material/colors";
@@ -82,7 +82,7 @@ const Menu = ({ selectedUser, setSelectedUser }) => {
                             className="avatar"
                             onClick={() => handleUserClick(index)}
                         >
-                            {user.initial}
+                            {user.name[0]} {/* Assuming user object has a 'name' property */}
                         </Avatar>
                     ))}
                 </AvatarGroup>

@@ -1,19 +1,8 @@
-const { connectClient, getCollection } = require('../config/database');
+const userService = require('../services/userService');
 
-// Variable zum Speichern des ausgewählten Benutzers
-let currentUser;
-let io;  // Declare a variable to hold the io object
-
-const setSocket = (socketIo) => {
-    io = socketIo;
-};
-
-// Funktion zum Abrufen aller Benutzer
 const getUsers = async (req, res) => {
     try {
-        await connectClient();
-        const usersCollection = getCollection('users');
-        const users = await usersCollection.find().toArray();
+        const users = await userService.getUsers();
         res.json(users);
     } catch (error) {
         console.error('Error in /users endpoint:', error);
@@ -21,36 +10,21 @@ const getUsers = async (req, res) => {
     }
 };
 
-// Funktion zum Aktualisieren des ausgewählten Benutzers
 const updateSelectedUser = async (req, res) => {
-    let user = req.body.selectedUser; // Make sure the user object is correctly extracted from the request body
+    const user = req.body.selectedUser;
     try {
-        await connectClient();
-        const usersCollection = getCollection('users');
-        const users = await usersCollection.find().toArray();
-        if (user && users.find(u => u.id === user.id)) {
-            currentUser = user; // Setze die globale Variable "currentUser" direkt auf das Benutzerobjekt
-            if (io) {
-                io.emit('bookingChanged');
-            }
-            res.status(200).json({ message: 'Selected user updated successfully', user: currentUser });
-        } else {
-            res.status(400).json({ message: 'Invalid user' });
-        }
+        const updatedUser = await userService.updateSelectedUser(user);
+        res.status(200).json({ message: 'Selected user updated successfully', user: updatedUser });
     } catch (error) {
         console.error('Error in /selectedUser endpoint:', error);
         res.status(500).send('Internal Server Error');
     }
 };
 
-// Funktion zum Abrufen der Buchungen des ausgewählten Benutzers
 const getUserBookings = async (req, res) => {
     try {
-        const currentUser = await getCurrentUser();
-        const userName = currentUser.name;
-        await connectClient();
-        const bookingsCollection = getCollection('bookings');
-        const bookings = await bookingsCollection.find({ userName: userName }).toArray();
+        const currentUser = await userService.getCurrentUser();
+        const bookings = await userService.getUserBookings(currentUser.name);
         res.json(bookings);
     } catch (error) {
         console.error('Error fetching bookings:', error);
@@ -58,21 +32,15 @@ const getUserBookings = async (req, res) => {
     }
 };
 
-// Funktion zum Abrufen des aktuellen Benutzernamens
-const getCurrentUser = async () => {
-    if (currentUser) {
-        return currentUser;
-    }
-
+const getCurrentUser = async (req, res) => {
     try {
-        await connectClient();
-        const usersCollection = getCollection('users');
-        return await usersCollection.findOne();
+        const user = await userService.getCurrentUser();
+        console.log(user)
+        res.json(user);
     } catch (error) {
-        console.error('Error fetching first user:', error);
-        throw new Error('Internal Server Error');
+        console.error('Error fetching current user:', error);
+        res.status(500).send('Internal Server Error');
     }
 };
 
-// Export der Funktionen als Controller-Methoden
-module.exports = { getUsers, updateSelectedUser, getUserBookings, getCurrentUser, setSocket };
+module.exports = { getUsers, updateSelectedUser, getUserBookings, getCurrentUser };

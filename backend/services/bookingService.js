@@ -1,5 +1,5 @@
 const { connectClient, getCollection } = require('../config/database');
-const { getCurrentUser } = require('../controllers/userController');
+const { getCurrentUser } = require('./userService');
 
 let io;  // Declare a variable to hold the io object
 

@@ -40,5 +40,5 @@ server.listen(PORT, () => {
 // Pass the io object to the booking service
 const bookingService = require('./services/bookingService');
 bookingService.setSocket(io);
-const userController = require('./controllers/userController');
-userController.setSocket(io)
+const userService = require('./services/userService');
+userService.setSocket(io);

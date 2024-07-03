@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const userRoutes = require('./routes/userRoutes');
 const openaiRoutes = require('./routes/openaiRoutes');
 const googleRoutes = require('./routes/googleRoutes');
+const { connectClient } = require('./config/database');
 
 const app = express();
 const server = http.createServer(app);
@@ -33,12 +34,22 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(PORT, () => {
-    console.log(`App listening on ${PORT}`);
-});
+// Ensure DB connection is established once before starting services
+const startServer = async () => {
+    await connectClient(); // Ensure DB connection is established once
 
-// Pass the io object to the booking service
-const bookingService = require('./services/bookingService');
-bookingService.setSocket(io);
-const userService = require('./services/userService');
-userService.setSocket(io);
+    // Pass the io object to the booking and user services
+    const bookingService = require('./services/bookingService');
+    bookingService.setSocket(io);
+    await bookingService.setCollections(); // Initialize collections
+
+    const userService = require('./services/userService');
+    userService.setSocket(io);
+    await userService.setCollections(); // Initialize collections
+
+    server.listen(PORT, () => {
+        console.log(`App listening on ${PORT}`);
+    });
+};
+
+startServer();

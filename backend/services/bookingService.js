@@ -1,15 +1,15 @@
-const { connectClient, getCollection } = require('../config/database');
+const { getCollection } = require('../config/database');
 const { getCurrentUser } = require('./userService');
 
-let io;  // Declare a variable to hold the io object
+let io;
+let bookingsCollection;
 
 const setSocket = (socketIo) => {
     io = socketIo;
 };
 
-const connectAndGetCollection = async (collectionName) => {
-    await connectClient();
-    return getCollection(collectionName);
+const setCollections = async () => {
+    bookingsCollection = getCollection('bookings');
 };
 
 const getCurrentUsername = async () => {
@@ -20,7 +20,6 @@ const getCurrentUsername = async () => {
 const findBooking = async (functionArgs) => {
     const userName = await getCurrentUsername();
     try {
-        const bookingsCollection = await connectAndGetCollection('bookings');
         const query = { userName, ...functionArgs };
         const result = await bookingsCollection.find(query).toArray();
         console.log('findBooking result:', result);
@@ -34,7 +33,6 @@ const findBooking = async (functionArgs) => {
 const createBooking = async (bookingDetails) => {
     const userName = await getCurrentUsername();
     try {
-        const bookingsCollection = await connectAndGetCollection('bookings');
         const result = await bookingsCollection.insertOne({ userName, ...bookingDetails });
 
         if (io) {
@@ -51,8 +49,6 @@ const createBooking = async (bookingDetails) => {
 const updateBooking = async (query) => {
     const userName = await getCurrentUsername();
     try {
-        const bookingsCollection = await connectAndGetCollection('bookings');
-
         const { new_roomNumber, new_date, new_timeSlot, ...originalQuery } = query;
 
         let updateFields = {};
@@ -86,7 +82,6 @@ const updateBooking = async (query) => {
 const deleteBooking = async (query) => {
     const userName = await getCurrentUsername();
     try {
-        const bookingsCollection = await connectAndGetCollection('bookings');
         const result = await bookingsCollection.deleteOne({ userName, ...query });
 
         if (io) {
@@ -100,4 +95,4 @@ const deleteBooking = async (query) => {
     }
 };
 
-module.exports = { findBooking, createBooking, updateBooking, deleteBooking, setSocket };
+module.exports = { findBooking, createBooking, updateBooking, deleteBooking, setSocket, setCollections };

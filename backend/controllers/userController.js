@@ -35,7 +35,6 @@ const getUserBookings = async (req, res) => {
 const getCurrentUser = async (req, res) => {
     try {
         const user = await userService.getCurrentUser();
-        console.log(user)
         res.json(user);
     } catch (error) {
         console.error('Error fetching current user:', error);

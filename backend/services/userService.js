@@ -1,21 +1,24 @@
-const { connectClient, getCollection } = require('../config/database');
+const { getCollection } = require('../config/database');
 
 let currentUser;
 let io;
+let usersCollection;
+let bookingsCollection;
 
 const setSocket = (socketIo) => {
     io = socketIo;
 };
 
+const setCollections = async () => {
+    usersCollection = getCollection('users');
+    bookingsCollection = getCollection('bookings');
+};
+
 const getUsers = async () => {
-    await connectClient();
-    const usersCollection = getCollection('users');
     return await usersCollection.find().toArray();
 };
 
 const updateSelectedUser = async (user) => {
-    await connectClient();
-    const usersCollection = getCollection('users');
     const users = await usersCollection.find().toArray();
     if (user && users.find(u => u.id === user.id)) {
         currentUser = user;
@@ -29,8 +32,6 @@ const updateSelectedUser = async (user) => {
 };
 
 const getUserBookings = async (userName) => {
-    await connectClient();
-    const bookingsCollection = getCollection('bookings');
     return await bookingsCollection.find({ userName }).toArray();
 };
 
@@ -38,10 +39,7 @@ const getCurrentUser = async () => {
     if (currentUser) {
         return currentUser;
     }
-
-    await connectClient();
-    const usersCollection = getCollection('users');
     return await usersCollection.findOne();
 };
 
-module.exports = { getUsers, updateSelectedUser, getUserBookings, getCurrentUser, setSocket };
+module.exports = { getUsers, updateSelectedUser, getUserBookings, getCurrentUser, setSocket, setCollections };

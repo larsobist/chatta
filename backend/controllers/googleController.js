@@ -1,4 +1,5 @@
 const client = require('../config/google');
+const { handleDialogflowRequest } = require('../services/googleService');
 
 const getToken = async (req, res) => {
     try {
@@ -10,4 +11,14 @@ const getToken = async (req, res) => {
     }
 };
 
-module.exports = { getToken };
+const dialogflowHandler = async (req, res) => {
+    try {
+        const response = await handleDialogflowRequest(req.body);
+        res.json(response);
+    } catch (error) {
+        console.error('Error in dialogflowHandler:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+module.exports = { dialogflowHandler, getToken };

@@ -96,6 +96,17 @@
     }
 }
 
+.sample-messages {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
+
+    .sample-message-button {
+        margin: 0 3px;
+        font-size: 11px;
+    }
+}
+
 .input-container {
     display: flex;
     align-items: center;

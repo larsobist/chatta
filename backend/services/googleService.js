@@ -5,6 +5,8 @@ const handleDialogflowRequest = async (data) => {
     const dateObj = data.sessionInfo.parameters.date || {};
     const newDateObj = data.sessionInfo.parameters.new_date || {};
 
+    console.log(data.sessionInfo.parameters)
+
     const formattedDate = dateObj.year ? `${dateObj.year}-${String(dateObj.month).padStart(2, '0')}-${String(dateObj.day).padStart(2, '0')}` : null;
     const formattedNewDate = newDateObj.year ? `${newDateObj.year}-${String(newDateObj.month).padStart(2, '0')}-${String(newDateObj.day).padStart(2, '0')}` : null;
 
@@ -12,9 +14,9 @@ const handleDialogflowRequest = async (data) => {
     if (formattedDate) functionArgs.date = formattedDate;
     if (data.sessionInfo.parameters.room) functionArgs.roomNumber = data.sessionInfo.parameters.room.toString();
     if (data.sessionInfo.parameters.timeslot) functionArgs.timeSlot = data.sessionInfo.parameters.timeslot;
-    if (formattedNewDate) functionArgs.new_date = formattedDate;
+    if (formattedNewDate) functionArgs.new_date = formattedNewDate;
     if (data.sessionInfo.parameters.new_room) functionArgs.new_roomNumber = data.sessionInfo.parameters.new_room.toString();
-    if (data.sessionInfo.parameters.new_timeSlot) functionArgs.new_timeSlot = data.sessionInfo.parameters.new_timeslot;
+    if (data.sessionInfo.parameters.new_timeslot) functionArgs.new_timeSlot = data.sessionInfo.parameters.new_timeslot;
 
     try {
         switch (intentName) {

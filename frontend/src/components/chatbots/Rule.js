@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const Rule = ({ selectedUser }) => {
     const [accessToken, setAccessToken] = useState(null);
+    const [isTokenFetched, setIsTokenFetched] = useState(false);
     const sessionId = uuidv4();
 
     useEffect(() => {
@@ -19,6 +20,7 @@ const Rule = ({ selectedUser }) => {
                 }
                 const data = await response.json();
                 setAccessToken(data.token);
+                setIsTokenFetched(true);  // Set the done state here
             } catch (error) {
                 console.error('Error fetching access token:', error);
             }
@@ -28,6 +30,10 @@ const Rule = ({ selectedUser }) => {
     }, []);
 
     const fetchResponse = async (selectedUser, text) => {
+        if (!accessToken) {
+            throw new Error('Access token not available');
+        }
+
         const requestBody = {
             queryInput: {
                 text: {
@@ -70,6 +76,7 @@ const Rule = ({ selectedUser }) => {
             selectedUser={selectedUser}
             fetchResponse={fetchResponse}
             initialBotMessage={initialBotMessage}
+            isLoading={!isTokenFetched}
         />
     );
 };

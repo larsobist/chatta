@@ -3,8 +3,8 @@ import './Chatbots.scss';
 import { Button, TextField } from "@mui/material";
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 
-const Chat = ({ selectedUser, fetchResponse, initialBotMessage }) => {
-    const [messages, setMessages] = useState([{ type: 'bot', content: initialBotMessage(selectedUser.name) }]);
+const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => {
+    const [messages, setMessages] = useState([{ type: 'bot', content: isLoading ? 'loading' : initialBotMessage(selectedUser.name) }]);
     const [text, setText] = useState('');
     const [showFadeOut, setShowFadeOut] = useState(false);
     const [hasMessageBeenSent, setHasMessageBeenSent] = useState(false);
@@ -25,9 +25,9 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage }) => {
     }, [messages]);
 
     useEffect(() => {
-        setMessages([{ type: 'bot', content: initialBotMessage(selectedUser.name) }]);
+        setMessages([{ type: 'bot', content: isLoading ? 'loading' : initialBotMessage(selectedUser.name) }]);
         setHasMessageBeenSent(false);  // Reset hasMessageBeenSent when the user changes
-    }, [selectedUser, initialBotMessage]);
+    }, [selectedUser, initialBotMessage, isLoading]);
 
     const handleSend = async (messageText = text) => {
         if (messageText.trim() === '') return;
@@ -63,7 +63,7 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage }) => {
                         className={`chat-message ${message.type}`}
                         style={message.type === 'user' ? { backgroundColor: selectedUser.color } : {}}
                     >
-                        {message.content === 'typing' ? (
+                        {message.content === 'typing' || message.content === 'loading' ? (
                             <div className="typing-indicator">
                                 <span></span><span></span><span></span>
                             </div>
@@ -71,7 +71,7 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage }) => {
                     </div>
                 ))}
             </div>
-            {!hasMessageBeenSent && (
+            {!hasMessageBeenSent && !isLoading && (
                 <div className="sample-messages">
                     {sampleMessages.map((sampleMessage, index) => (
                         <Button
@@ -99,13 +99,15 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage }) => {
                            variant="outlined"
                            value={text}
                            onChange={e => setText(e.target.value)}
-                           onKeyPress={e => e.key === 'Enter' ? handleSend() : null}
+                           onKeyPress={e => e.key === 'Enter' && !isLoading ? handleSend() : null}
                            className="input-field"
+                           disabled={isLoading}
                 />
                 <Button variant="contained"
                         onClick={() => handleSend()}
                         style={{ backgroundColor: selectedUser.color }}
                         className="send-button"
+                        disabled={isLoading}
                 ><SendRoundedIcon /></Button>
             </div>
         </div>

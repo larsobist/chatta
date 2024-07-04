@@ -20,7 +20,6 @@ const Overview = ({ selectedUser }) => {
         });
 
         socket.on('bookingChanged', () => {
-            console.log('Booking data changed, fetching updated bookings...');
             fetchBookings();
         });
 

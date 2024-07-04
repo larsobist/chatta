@@ -3,10 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
-const userRoutes = require('./routes/userRoutes');
-const openaiRoutes = require('./routes/openaiRoutes');
-const googleRoutes = require('./routes/googleRoutes');
-const { connectClient } = require('./config/database');
+const userRoutes = require('./src/routes/userRoutes');
+const openaiRoutes = require('./src/routes/openaiRoutes');
+const googleRoutes = require('./src/routes/googleRoutes');
+const { connectClient } = require('./src/config/database');
 
 const app = express();
 const server = http.createServer(app);
@@ -39,11 +39,11 @@ const startServer = async () => {
     await connectClient(); // Ensure DB connection is established once
 
     // Pass the io object to the booking and user services
-    const bookingService = require('./services/bookingService');
+    const bookingService = require('./src/services/bookingService');
     bookingService.setSocket(io);
     await bookingService.setCollections(); // Initialize collections
 
-    const userService = require('./services/userService');
+    const userService = require('./src/services/userService');
     userService.setSocket(io);
     await userService.setCollections(); // Initialize collections
 

@@ -3,14 +3,16 @@ import Chat from './Chat';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from 'react-i18next';
 
-
-const Rule = ({ selectedUser }) => {
+const Rule = ({ selectedUser, language }) => {
     const [accessToken, setAccessToken] = useState(null);
     const [isTokenFetched, setIsTokenFetched] = useState(false);
     const sessionId = uuidv4();
     const { t } = useTranslation();
 
     useEffect(() => {
+        setIsTokenFetched(false);
+        setAccessToken(null);
+
         const fetchToken = async () => {
             try {
                 const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/get-token`, {
@@ -23,14 +25,14 @@ const Rule = ({ selectedUser }) => {
                 }
                 const data = await response.json();
                 setAccessToken(data.token);
-                setIsTokenFetched(true);  // Set the done state here
+                setIsTokenFetched(true);
             } catch (error) {
                 console.error('Error fetching access token:', error);
             }
         };
 
         fetchToken();
-    }, []);
+    }, [selectedUser, language]);
 
     const fetchResponse = async (selectedUser, text) => {
         if (!accessToken) {
@@ -42,7 +44,7 @@ const Rule = ({ selectedUser }) => {
                 text: {
                     text: text,
                 },
-                languageCode: process.env.REACT_APP_GOOGLE_LANGUAGE_CODE,
+                languageCode: language,
             },
         };
 

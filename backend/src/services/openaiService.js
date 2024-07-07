@@ -3,13 +3,13 @@ const { findBooking, createBooking, updateBooking, deleteBooking } = require('./
 
 let messageHistory = [];
 
-const handleOpenAIRequest = async (textInput) => {
+const handleOpenAIRequest = async (textInput, language) => {
     const currentDate = new Date().toISOString().split('T')[0];
 
     if (messageHistory.length === 0) {
         messageHistory.push({
             role: "system",
-            content: `You are a helpful room booking assistant. The current date is ${currentDate}. Help the user with all necessary information questions and make calls to the database if needed.`
+            content: `You are a helpful room booking assistant. The current date is ${currentDate}. Help the user with all necessary information questions and make calls to the database if needed. You can only answer in the language with the language ${language}, you dont know any other language.`
         });
     }
 

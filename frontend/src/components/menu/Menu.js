@@ -5,13 +5,11 @@ import Avatar from "@mui/material/Avatar";
 import { blue, cyan, indigo, lightBlue } from "@mui/material/colors";
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import i18n from '../../i18n';
 import './Menu.scss';
 
-const Menu = ({ selectedUser, setSelectedUser }) => {
+const Menu = ({ selectedUser, setSelectedUser, language, setLanguage }) => {
     const { t } = useTranslation();
     const [users, setUsers] = useState([]);
-    const [language, setLanguage] = useState(i18n.language);
     const colors = useMemo(() => [indigo[500], blue[500], lightBlue[500], cyan[500]], []);
 
     useEffect(() => {
@@ -73,7 +71,6 @@ const Menu = ({ selectedUser, setSelectedUser }) => {
     const handleLanguageChange = (event, newLanguage) => {
         if (newLanguage !== null) {
             setLanguage(newLanguage);
-            i18n.changeLanguage(newLanguage);
         }
     };
 

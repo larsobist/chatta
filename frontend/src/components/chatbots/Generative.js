@@ -2,13 +2,13 @@ import React from 'react';
 import Chat from "./Chat";
 import { useTranslation } from 'react-i18next';
 
-const Generative = ({ selectedUser }) => {
+const Generative = ({ selectedUser, language }) => {
     const { t } = useTranslation();
 
     const fetchResponse = async (selectedUser, text) => {
         const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/openai`, {
             method: 'POST',
-            body: JSON.stringify({ selectedUser: selectedUser, text }),
+            body: JSON.stringify({ language, text }),
             headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': 'chatta/0.0.2'

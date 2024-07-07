@@ -2,9 +2,10 @@ const { handleOpenAIRequest } = require('../services/openaiService');
 
 const handleOpenAIRequestHandler = async (req, res) => {
     const textInput = req.body.text;
+    const language = req.body.language;
 
     try {
-        const response = await handleOpenAIRequest(textInput);
+        const response = await handleOpenAIRequest(textInput, language);
         res.json({ message: response });
     } catch (error) {
         console.error("Error processing request:", error);

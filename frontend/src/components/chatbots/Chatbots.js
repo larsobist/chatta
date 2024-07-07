@@ -5,7 +5,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTranslation } from 'react-i18next';
 
-const Chatbots = ({ selectedUser }) => {
+const Chatbots = ({ selectedUser, language }) => {
     const [chatbot, setChatbot] = useState('rule');
     const { t } = useTranslation();
 
@@ -33,10 +33,10 @@ const Chatbots = ({ selectedUser }) => {
                 </ToggleButtonGroup>
             </div>
             {chatbot === 'rule' && (
-                <Rule key={selectedUser.id} selectedUser={selectedUser} />
+                <Rule key={selectedUser.id} selectedUser={selectedUser} language={language} />
             )}
             {chatbot === 'generative' && (
-                <Generative key={selectedUser.id} selectedUser={selectedUser} />
+                <Generative key={selectedUser.id} selectedUser={selectedUser} language={language} />
             )}
         </div>
     );

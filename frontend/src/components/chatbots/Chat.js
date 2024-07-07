@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Chatbots.scss';
 import { Button, TextField } from "@mui/material";
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import { useTranslation } from 'react-i18next';
 
 const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => {
+    const { t } = useTranslation();
     const [messages, setMessages] = useState([{ type: 'bot', content: isLoading ? 'loading' : initialBotMessage(selectedUser.name) }]);
     const [text, setText] = useState('');
     const [showFadeOut, setShowFadeOut] = useState(false);
@@ -11,10 +13,10 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
     const chatBoxRef = useRef(null);
 
     const sampleMessages = [
-        'Finde meine heutige Buchung',
-        'Erstelle eine Reservierung',
-        'Update eine Buchung',
-        'Lösche eine Reservierung'
+        t('findBooking'),   // Use the translation function here
+        t('addBooking'),
+        t('updateBooking'),
+        t('deleteBooking')
     ];
 
     useEffect(() => {
@@ -95,7 +97,7 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
             )}
             <div className="input-container">
                 <TextField id="input"
-                           placeholder="Schreib deine Nachricht hier..."
+                           placeholder={t('typeMessage')}
                            variant="outlined"
                            value={text}
                            onChange={e => setText(e.target.value)}

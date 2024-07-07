@@ -1,8 +1,9 @@
-import './App.scss';
-import Chatbots from "./components/chatbots/Chatbots";
-import Menu from "./components/header/Menu";
-import Overview from "./components/overview/Overview";
 import React, { useState } from "react";
+import './App.scss';
+import './i18n';
+import Chatbots from "./components/chatbots/Chatbots";
+import Menu from "./components/menu/Menu";
+import Overview from "./components/overview/Overview";
 
 const App = () => {
     const [selectedUser, setSelectedUser] = useState(null);

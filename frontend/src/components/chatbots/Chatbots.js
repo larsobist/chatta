@@ -3,9 +3,11 @@ import Generative from "./Generative";
 import Rule from "./Rule";
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { useTranslation } from 'react-i18next';
 
 const Chatbots = ({ selectedUser }) => {
     const [chatbot, setChatbot] = useState('rule');
+    const { t } = useTranslation();
 
     const handleChatbot = (event, newChatbot) => {
         if (newChatbot !== null) {
@@ -23,10 +25,10 @@ const Chatbots = ({ selectedUser }) => {
                     onChange={handleChatbot}
                 >
                     <ToggleButton value="rule">
-                        Rule Based
+                        {t('ruleBased')}
                     </ToggleButton>
                     <ToggleButton value="generative">
-                        Generative
+                        {t('generative')}
                     </ToggleButton>
                 </ToggleButtonGroup>
             </div>

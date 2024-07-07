@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import Chat from './Chat';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from 'react-i18next';
+
 
 const Rule = ({ selectedUser }) => {
     const [accessToken, setAccessToken] = useState(null);
     const [isTokenFetched, setIsTokenFetched] = useState(false);
     const sessionId = uuidv4();
+    const { t } = useTranslation();
 
     useEffect(() => {
         const fetchToken = async () => {
@@ -69,7 +72,7 @@ const Rule = ({ selectedUser }) => {
         return botMessage;
     };
 
-    const initialBotMessage = (userName) => `Hallo ${userName}! Ich bin ein Regelbasierter Chatbot der für dich in der Lage ist, dir bei deiner Verwaltung deiner Raumbuchungen zu helfen. Sag mir nur wie ich dir helfen kann!`;
+    const initialBotMessage = (userName) => t('botMessage', { userName });
 
     return (
         <Chat

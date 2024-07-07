@@ -1,7 +1,10 @@
 import React from 'react';
 import Chat from "./Chat";
+import { useTranslation } from 'react-i18next';
 
 const Generative = ({ selectedUser }) => {
+    const { t } = useTranslation();
+
     const fetchResponse = async (selectedUser, text) => {
         const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/openai`, {
             method: 'POST',
@@ -15,7 +18,7 @@ const Generative = ({ selectedUser }) => {
         return data.message || 'Unexpected response structure';
     };
 
-    const initialBotMessage = (userName) => `Moin ${userName}! Ich bin ein generativer Chatbot der für dich in der Lage ist, dir bei deiner Verwaltung deiner Raumbuchungen zu helfen. Sag mir nur wie ich dir helfen kann!`;
+    const initialBotMessage = (userName) => t('botMessage', { userName });
 
     return (
         <Chat

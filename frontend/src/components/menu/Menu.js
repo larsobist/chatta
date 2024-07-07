@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useTranslation } from 'react-i18next';
 import AvatarGroup from "@mui/material/AvatarGroup";
 import Avatar from "@mui/material/Avatar";
 import { blue, cyan, indigo, lightBlue } from "@mui/material/colors";
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import i18n from '../../i18n';
 import './Menu.scss';
 
 const Menu = ({ selectedUser, setSelectedUser }) => {
+    const { t } = useTranslation();
     const [users, setUsers] = useState([]);
+    const [language, setLanguage] = useState(i18n.language);
     const colors = useMemo(() => [indigo[500], blue[500], lightBlue[500], cyan[500]], []);
 
     useEffect(() => {
@@ -64,15 +70,39 @@ const Menu = ({ selectedUser, setSelectedUser }) => {
         }
     };
 
+    const handleLanguageChange = (event, newLanguage) => {
+        if (newLanguage !== null) {
+            setLanguage(newLanguage);
+            i18n.changeLanguage(newLanguage);
+        }
+    };
+
     return (
         <div className="menu">
             <div className="logo">
                 chatta
             </div>
 
+            <div className="welcome-message">
+                <ToggleButtonGroup
+                    value={language}
+                    exclusive
+                    onChange={handleLanguageChange}
+                    size="small"
+                    aria-label="language"
+                >
+                    <ToggleButton value="en" aria-label="english">
+                        en
+                    </ToggleButton>
+                    <ToggleButton value="de" aria-label="german">
+                        de
+                    </ToggleButton>
+                </ToggleButtonGroup>
+            </div>
+
             <div className="user-selection">
                 <div className="vertical-center">
-                    Anderer Nutzer:
+                    {t('user')}
                 </div>
                 <AvatarGroup max={4} className="avatar-group">
                     {users.map((user, index) => (

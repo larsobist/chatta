@@ -1,16 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { io } from 'socket.io-client';
-import './Overview.scss';  // Import the CSS file for styling
-
-const columns = [
-    { field: 'roomNumber', headerName: 'Room Number', flex: 1, disableColumnMenu: true },
-    { field: 'date', headerName: 'Date', flex: 1, disableColumnMenu: true },
-    { field: 'timeSlot', headerName: 'Time Slot', flex: 1, disableColumnMenu: true },
-];
+import './Overview.scss';
+import { useTranslation } from 'react-i18next';
 
 const Overview = ({ selectedUser }) => {
     const [rows, setRows] = useState([]);
+    const { t } = useTranslation();
 
     useEffect(() => {
         const socket = io(process.env.REACT_APP_LOCAL_URL);
@@ -55,9 +51,15 @@ const Overview = ({ selectedUser }) => {
         fetchBookings();
     }, [selectedUser]);
 
+    const columns = [
+        { field: 'roomNumber', headerName: t('roomNumber'), flex: 1, disableColumnMenu: true },
+        { field: 'date', headerName: t('date'), flex: 1, disableColumnMenu: true },
+        { field: 'timeSlot', headerName: t('time'), flex: 1, disableColumnMenu: true },
+    ];
+
     return (
         <div>
-            <h1>{selectedUser?.name ?? 'User'}'s Buchungen</h1>
+            <h1>{selectedUser?.name ?? 'User'}'s {t('bookings')}</h1>
             <div className="table">
                 <DataGrid
                     rows={rows}

@@ -1,0 +1,15 @@
+{
+  "user": "User",
+  "bookings": "Bookings",
+  "roomNumber": "Room Number",
+  "date": "Date",
+  "time": "Time",
+  "ruleBased": "Rule-Based",
+  "generative": "Generative",
+  "typeMessage": "Type your message here...",
+  "findBooking": "Find today's reservations",
+  "addBooking": "Make a booking",
+  "updateBooking": "Update a reservation",
+  "deleteBooking": "Delete a booking",
+  "botMessage": "Hello {{userName}}! I am a rule-based chatbot capable of helping you manage your room bookings. Just tell me how I can assist you!"
+}

@@ -1,0 +1,15 @@
+{
+  "user": "Nutzer",
+  "bookings": "Buchungen",
+  "roomNumber": "Raumnummer",
+  "date": "Datum",
+  "time": "Uhrzeit",
+  "ruleBased": "Regelbasiert",
+  "generative": "Generativ",
+  "typeMessage": "Schreib deine Nachricht hier...",
+  "findBooking": "Finde meine heutige Buchung",
+  "addBooking": "Erstelle eine Reservierung",
+  "updateBooking": "Update eine Buchung",
+  "deleteBooking": "Lösche eine Reservierung",
+  "botMessage": "Hallo {{userName}}! Ich bin ein Regelbasierter Chatbot, der dir bei der Verwaltung deiner Raumbuchungen helfen kann. Sag mir nur, wie ich dir helfen kann!"
+}

@@ -15,7 +15,7 @@ const Menu = ({ selectedUser, setSelectedUser, language, setLanguage }) => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/users`, {
+                const response = await fetch(`${process.env.REACT_APP_BACKEND_LOCAL_URL}/users`, {
                     headers: {
                         'User-Agent': 'chatta/0.0.2'
                     }
@@ -52,7 +52,7 @@ const Menu = ({ selectedUser, setSelectedUser, language, setLanguage }) => {
 
     const updateSelectedUser = async (user) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/selectedUser`, {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_LOCAL_URL}/selectedUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -9,7 +9,7 @@ const Overview = ({ selectedUser }) => {
     const { t } = useTranslation();
 
     useEffect(() => {
-        const socket = io(process.env.REACT_APP_LOCAL_URL);
+        const socket = io(process.env.REACT_APP_BACKEND_LOCAL_URL);
 
         socket.on('connect', () => {
             console.log('Successfully connected to the server');
@@ -31,7 +31,7 @@ const Overview = ({ selectedUser }) => {
 
     const fetchBookings = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/user-bookings`, {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_LOCAL_URL}/user-bookings`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'User-Agent': 'chatta/0.0.2'

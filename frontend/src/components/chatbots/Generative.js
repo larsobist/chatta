@@ -6,7 +6,7 @@ const Generative = ({ selectedUser, language }) => {
     const { t } = useTranslation();
 
     const fetchResponse = async (selectedUser, text) => {
-        const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/openai`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_LOCAL_URL}/openai`, {
             method: 'POST',
             body: JSON.stringify({ language, text }),
             headers: {

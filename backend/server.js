@@ -16,7 +16,6 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
-const PORT = 8080;
 
 app.use(express.json());
 app.use(cors());
@@ -47,8 +46,8 @@ const startServer = async () => {
     userService.setSocket(io);
     await userService.setCollections(); // Initialize collections
 
-    server.listen(PORT, () => {
-        console.log(`App listening on ${PORT}`);
+    server.listen(process.env.PORT || 8080, () => {
+        console.log(`App listening on ${process.env.PORT}`);
     });
 };
 

@@ -20,10 +20,12 @@ const Rule = ({ selectedUser, language }) => {
                         'User-Agent': 'chatta/0.0.2'
                     }
                 });
+                console.log('Backend URL:', process.env.REACT_APP_BACKEND_URL);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch access token');
+                    throw new Error(`Failed to fetch access token: ${response.statusText}`);
                 }
                 const data = await response.json();
+                console.log('Access token fetched:', data.token);  // Logging the fetched token
                 setAccessToken(data.token);
                 setIsTokenFetched(true);
             } catch (error) {
@@ -48,30 +50,37 @@ const Rule = ({ selectedUser, language }) => {
             },
         };
 
-        const response = await fetch(
-            `https://${process.env.REACT_APP_GOOGLE_LOCATION}-dialogflow.googleapis.com/v3/projects/${process.env.REACT_APP_GOOGLE_PROJECT_ID}/locations/${process.env.REACT_APP_GOOGLE_LOCATION}/agents/${process.env.REACT_APP_GOOGLE_AGENT_ID}/sessions/${sessionId}:detectIntent`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify(requestBody),
+        try {
+            const response = await fetch(
+                `https://${process.env.REACT_APP_GOOGLE_LOCATION}-dialogflow.googleapis.com/v3/projects/${process.env.REACT_APP_GOOGLE_PROJECT_ID}/locations/${process.env.REACT_APP_GOOGLE_LOCATION}/agents/${process.env.REACT_APP_GOOGLE_AGENT_ID}/sessions/${sessionId}:detectIntent`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify(requestBody),
+                }
+            );
+            console.log('Backend URL:', process.env.REACT_APP_BACKEND_URL);
+
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Dialogflow API response error:', errorText);
+                throw new Error(`Failed to send message to Dialogflow: ${response.statusText}`);
             }
-        );
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Dialogflow API response error:', errorText);
-            throw new Error('Failed to send message to Dialogflow');
+            const responseData = await response.json();
+            const botMessage = responseData.queryResult.responseMessages
+                .map(msg => msg.text.text)
+                .join('\n');
+
+            return botMessage;
+        } catch (error) {
+            console.error('Error fetching response from Dialogflow:', error);
+            throw error;
         }
-
-        const responseData = await response.json();
-        const botMessage = responseData.queryResult.responseMessages
-            .map(msg => msg.text.text)
-            .join('\n');
-
-        return botMessage;
     };
 
     const initialBotMessage = (userName) => t('botMessage', { userName });

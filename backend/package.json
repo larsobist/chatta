@@ -19,7 +19,8 @@
   "scripts": {
     "backend": "nodemon server.js",
     "dev": "nodemon server.js",
-    "lint": "eslint . --ext .js,.jsx"
+    "lint": "eslint . --ext .js,.jsx",
+    "deploy": "bash deploy.sh"
   },
   "eslintConfig": {
     "extends": [

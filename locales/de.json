@@ -1,7 +1,8 @@
 {
   "user": "Nutzer",
-  "bookings": "Buchungen",
-  "roomNumber": "Raumnummer",
+  "lang": "Sprache",
+  "bookings": "Deine Buchungen",
+  "roomNumber": "Raum",
   "date": "Datum",
   "time": "Uhrzeit",
   "ruleBased": "Regelbasiert",

@@ -1,7 +1,8 @@
 {
   "user": "User",
-  "bookings": "Bookings",
-  "roomNumber": "Room Number",
+  "lang": "Language",
+  "bookings": "Your Bookings",
+  "roomNumber": "Room",
   "date": "Date",
   "time": "Time",
   "ruleBased": "Rule-Based",

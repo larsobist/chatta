@@ -25,11 +25,12 @@ const App = () => {
             <div className="app">
                 {selectedUser && (
                     <div className="container">
-                        <div className="overview">
-                            <Overview key={selectedUser.id} selectedUser={selectedUser} />
-                        </div>
                         <div className="chatbots">
-                            <Chatbots key={selectedUser.id} selectedUser={selectedUser} language={language} /> {/* Pass language here */}
+                            <Chatbots key={selectedUser.id} selectedUser={selectedUser}
+                                      language={language}/> {/* Pass language here */}
+                        </div>
+                        <div className="overview">
+                            <Overview key={selectedUser.id} selectedUser={selectedUser}/>
                         </div>
                     </div>
                 )}

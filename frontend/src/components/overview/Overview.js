@@ -59,7 +59,9 @@ const Overview = ({ selectedUser }) => {
 
     return (
         <div>
-            <h1>{selectedUser?.name ?? 'User'}'s {t('bookings')}</h1>
+            <div className="info-container">
+            <h1>{t('bookings')}</h1>
+            </div>
             <div className="table">
                 <DataGrid
                     rows={rows}

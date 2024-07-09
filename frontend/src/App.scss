@@ -4,11 +4,9 @@ body {
   font-family: -apple-system, 'Segoe UI', 'Roboto', 'Oxygen',
   'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
   sans-serif;
-  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
 }
-
 
 .app {
   display: flex;
@@ -36,11 +34,17 @@ body {
   box-sizing: border-box;
 }
 
-.overview {
-  border-right: 1px solid #ccc;
-}
-
 .chatbots {
   flex: 1;
-  border-left: 1px solid #ccc;
+}
+
+/* Responsive design */
+@media (max-width: 950px) {
+  .app {
+    height: auto;
+    padding: 2%;
+  }
+  .container {
+    flex-direction: column;
+  }
 }

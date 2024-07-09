@@ -2,7 +2,7 @@ import React, {useState, useEffect, useMemo} from "react";
 import {useTranslation} from 'react-i18next';
 import AvatarGroup from "@mui/material/AvatarGroup";
 import Avatar from "@mui/material/Avatar";
-import {blue, cyan, indigo, lightBlue} from "@mui/material/colors";
+import {blue, grey, cyan, indigo, lightBlue} from "@mui/material/colors";
 import './Menu.scss';
 
 const Menu = ({selectedUser, setSelectedUser, language, setLanguage}) => {
@@ -71,8 +71,8 @@ const Menu = ({selectedUser, setSelectedUser, language, setLanguage}) => {
     };
 
     const languages = [
-        {code: 'en', color: blue[500]},
-        {code: 'de', color: cyan[500]}
+        {code: 'en', color: grey[400]},
+        {code: 'de', color: grey[300]}
     ];
 
     return (

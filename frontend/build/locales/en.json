@@ -12,5 +12,5 @@
   "addBooking": "Make a booking",
   "updateBooking": "Update a reservation",
   "deleteBooking": "Delete a booking",
-  "botMessage": "Hello {{userName}}! I am a rule-based chatbot capable of helping you manage your room bookings. Just tell me how I can assist you!"
+  "botMessage": "Hello {{userName}}! I am a chatbot capable of helping you manage your room bookings. Just tell me how I can assist you!"
 }

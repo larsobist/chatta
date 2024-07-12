@@ -5,7 +5,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTranslation } from 'react-i18next';
 
-const Chatbots = ({ selectedUser, language }) => {
+const General = ({ selectedUser, language }) => {
     const [chatbot, setChatbot] = useState('rule');
     const { t } = useTranslation();
 
@@ -42,4 +42,4 @@ const Chatbots = ({ selectedUser, language }) => {
     );
 }
 
-export default Chatbots;
+export default General;

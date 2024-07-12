@@ -1,14 +1,18 @@
-import React, {useState, useEffect, useMemo} from "react";
-import {useTranslation} from 'react-i18next';
+import React, { useState, useEffect, useMemo } from "react";
+import { useTranslation } from 'react-i18next';
 import AvatarGroup from "@mui/material/AvatarGroup";
 import Avatar from "@mui/material/Avatar";
-import {blue, grey, cyan, indigo, lightBlue} from "@mui/material/colors";
 import './Menu.scss';
 
-const Menu = ({selectedUser, setSelectedUser, language, setLanguage}) => {
-    const {t} = useTranslation();
+const Menu = ({ selectedUser, setSelectedUser, setLanguage }) => {
+    const { t } = useTranslation();
     const [users, setUsers] = useState([]);
-    const colors = useMemo(() => [indigo[500], blue[500], lightBlue[500], cyan[500]], []);
+    const colors = useMemo(() => [
+        "rgb(63, 81, 181)",  // #3f51b5
+        "rgb(33, 150, 243)", // #2196f3
+        "rgb(3, 169, 244)",  // #03a9f4
+        "rgb(0, 188, 212)"   // #00bcd4
+    ], []);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -56,7 +60,7 @@ const Menu = ({selectedUser, setSelectedUser, language, setLanguage}) => {
                     'Content-Type': 'application/json',
                     'User-Agent': 'chatta/0.0.2'
                 },
-                body: JSON.stringify({selectedUser: user})
+                body: JSON.stringify({ selectedUser: user })
             });
             if (!response.ok) {
                 throw new Error('Failed to update selected user');
@@ -71,8 +75,8 @@ const Menu = ({selectedUser, setSelectedUser, language, setLanguage}) => {
     };
 
     const languages = [
-        {code: 'en', color: grey[400]},
-        {code: 'de', color: grey[300]}
+        { code: 'en', color: 'rgb(189, 189, 189)' },
+        { code: 'de', color: 'rgb(224, 224, 224)' }
     ];
 
     return (
@@ -85,11 +89,11 @@ const Menu = ({selectedUser, setSelectedUser, language, setLanguage}) => {
                     {languages.map((language, index) => (
                         <Avatar
                             key={index}
-                            sx={{bgcolor: language.color}}
+                            sx={{ bgcolor: language.color }}
                             className="avatar"
                             onClick={() => handleLanguageSwitch(language.code)}
                         >
-                            {language.code.toUpperCase()} {/* Display language code */}
+                            {language.code.toUpperCase()}
                         </Avatar>
                     ))}
                 </AvatarGroup>
@@ -102,11 +106,11 @@ const Menu = ({selectedUser, setSelectedUser, language, setLanguage}) => {
                     {users.map((user, index) => (
                         <Avatar
                             key={index}
-                            sx={{bgcolor: user.color}}
+                            sx={{ bgcolor: user.color }}
                             className="avatar"
                             onClick={() => handleUserClick(index)}
                         >
-                            {user.name[0]} {/* Assuming user object has a 'name' property */}
+                            {user.name[0]}
                         </Avatar>
                     ))}
                 </AvatarGroup>

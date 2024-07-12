@@ -12,5 +12,5 @@
   "addBooking": "Erstelle eine Reservierung",
   "updateBooking": "Update eine Buchung",
   "deleteBooking": "Lösche eine Reservierung",
-  "botMessage": "Hallo {{userName}}! Ich bin ein Regelbasierter Chatbot, der dir bei der Verwaltung deiner Raumbuchungen helfen kann. Sag mir nur, wie ich dir helfen kann!"
+  "botMessage": "Hallo {{userName}}! Ich bin ein Chatbot, der dir bei der Verwaltung deiner Raumbuchungen helfen kann. Sag mir nur, wie ich dir helfen kann!"
 }

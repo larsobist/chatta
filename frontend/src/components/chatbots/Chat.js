@@ -19,20 +19,6 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
         t('deleteBooking')
     ];
 
-    const hexToRgba = (hex, alpha = 0.1) => {
-        let r = 0, g = 0, b = 0;
-        if (hex.length === 4) {
-            r = parseInt(hex[1] + hex[1], 16);
-            g = parseInt(hex[2] + hex[2], 16);
-            b = parseInt(hex[3] + hex[3], 16);
-        } else if (hex.length === 7) {
-            r = parseInt(hex[1] + hex[2], 16);
-            g = parseInt(hex[3] + hex[4], 16);
-            b = parseInt(hex[5] + hex[6], 16);
-        }
-        return `rgba(${r},${g},${b},${alpha})`;
-    };
-
     useEffect(() => {
         if (chatBoxRef.current) {
             chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
@@ -69,6 +55,10 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
         handleSend(message);
     };
 
+    const rgbToRgba = (rgb, alpha) => {
+        return rgb.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
+    };
+
     return (
         <div className="chat-container">
             {showFadeOut && <div className="fade-out"></div>}
@@ -78,8 +68,8 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
                         key={index}
                         className={`chat-message ${message.type}`}
                         style={message.type === 'user'
-                            ? {backgroundColor: selectedUser.color}
-                            : {backgroundColor: hexToRgba(selectedUser.color, 0.1)}}
+                            ? { backgroundColor: selectedUser.color }
+                            : { backgroundColor: rgbToRgba(selectedUser.color, 0.1) }}
                     >
                         {message.content === 'typing' || message.content === 'loading' ? (
                             <div className="typing-indicator">
@@ -102,7 +92,7 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
                                 color: selectedUser.color,
                                 '&:hover': {
                                     borderColor: selectedUser.color,
-                                    backgroundColor: `${selectedUser.color}10`
+                                    backgroundColor: rgbToRgba(selectedUser.color, 0.1)
                                 }
                             }}
                         >

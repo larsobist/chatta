@@ -40,11 +40,11 @@ const startServer = async () => {
     // Pass the io object to the booking and user services
     const bookingService = require('./src/services/bookingService');
     bookingService.setSocket(io);
-    await bookingService.setCollections(); // Initialize collections
+    await bookingService.setCollections();
 
     const userService = require('./src/services/userService');
     userService.setSocket(io);
-    await userService.setCollections(); // Initialize collections
+    await userService.setCollections();
 
     server.listen(process.env.PORT || 8080, () => {
         console.log(`App listening on ${process.env.PORT}`);

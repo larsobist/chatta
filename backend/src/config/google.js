@@ -1,7 +1,6 @@
 const { GoogleAuth } = require('google-auth-library');
 
 const googlePrivateKey = decodeURIComponent(process.env.GOOGLE_PRIVATE_KEY).replace(/\\n/g, '\n');
-console.log(googlePrivateKey)
 
 const SERVICE_ACCOUNT_KEY = {
     type: process.env.GOOGLE_TYPE,

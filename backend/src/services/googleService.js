@@ -5,11 +5,40 @@ const handleDialogflowRequest = async (data) => {
     const dateObj = data.sessionInfo.parameters.date || {};
     const newDateObj = data.sessionInfo.parameters.new_date || {};
 
-    console.log(data.sessionInfo.parameters)
+    console.log(data.sessionInfo.parameters);
 
-    const formattedDate = dateObj.year ? `${dateObj.year}-${String(dateObj.month).padStart(2, '0')}-${String(dateObj.day).padStart(2, '0')}` : null;
-    const formattedNewDate = newDateObj.year ? `${newDateObj.year}-${String(newDateObj.month).padStart(2, '0')}-${String(newDateObj.day).padStart(2, '0')}` : null;
+    const formattedDate = formatDateString(dateObj);
+    const formattedNewDate = formatDateString(newDateObj);
 
+    const functionArgs = createFunctionArgs(data, formattedDate, formattedNewDate);
+
+    try {
+        switch (intentName) {
+            case 'findBooking':
+                await handleFindBooking(functionArgs);
+                break;
+            case 'createBooking':
+                await handleCreateBooking(functionArgs);
+                break;
+            case 'deleteBooking':
+                await handleDeleteBooking(functionArgs);
+                break;
+            case 'updateBooking':
+                await handleUpdateBooking(functionArgs);
+                break;
+            default:
+                console.log(`Intent ${intentName} not handled in the webhook.`);
+        }
+    } catch (error) {
+        console.error(`Error handling intent ${intentName}:`, error);
+    }
+};
+
+const formatDateString = (dateObj) => {
+    return dateObj.year ? `${dateObj.year}-${String(dateObj.month).padStart(2, '0')}-${String(dateObj.day).padStart(2, '0')}` : null;
+};
+
+const createFunctionArgs = (data, formattedDate, formattedNewDate) => {
     const functionArgs = {};
     if (formattedDate) functionArgs.date = formattedDate;
     if (data.sessionInfo.parameters.room) functionArgs.roomNumber = data.sessionInfo.parameters.room.toString();
@@ -17,170 +46,39 @@ const handleDialogflowRequest = async (data) => {
     if (formattedNewDate) functionArgs.new_date = formattedNewDate;
     if (data.sessionInfo.parameters.new_room) functionArgs.new_roomNumber = data.sessionInfo.parameters.new_room.toString();
     if (data.sessionInfo.parameters.new_timeslot) functionArgs.new_timeSlot = data.sessionInfo.parameters.new_timeslot;
-
-    try {
-        switch (intentName) {
-            case 'findBooking':
-                return await handleFindBooking(functionArgs);
-            case 'createBooking':
-                return await handleCreateBooking(functionArgs);
-            case 'deleteBooking':
-                return await handleDeleteBooking(functionArgs);
-            case 'updateBooking':
-                return await handleUpdateBooking(functionArgs);
-            default:
-                return {
-                    fulfillment_response: {
-                        messages: [
-                            {
-                                text: {
-                                    text: [`Intent ${intentName} not handled in the webhook.`]
-                                }
-                            }
-                        ]
-                    }
-                };
-        }
-    } catch (error) {
-        console.error(`Error handling intent ${intentName}:`, error);
-        return {
-            fulfillment_response: {
-                messages: [
-                    {
-                        text: {
-                            text: [`Failed to handle intent ${intentName}.`]
-                        }
-                    }
-                ]
-            }
-        };
-    }
+    return functionArgs;
 };
 
 const handleFindBooking = async (functionArgs) => {
     try {
-        const findResult = await findBooking(functionArgs);
-        const bookingsText = findResult.map(booking =>
-            `Room: ${booking.roomNumber}, Date: ${booking.date}, Time Slot: ${booking.timeSlot}`
-        ).join('\n');
-
-        return {
-            fulfillment_response: {
-                messages: [
-                    {
-                        text: {
-                            text: [`Your bookings:\n${bookingsText}`]
-                        }
-                    }
-                ]
-            }
-        };
+        await findBooking(functionArgs);
     } catch (error) {
         console.error('Error finding booking:', error);
-        return {
-            fulfillment_response: {
-                messages: [
-                    {
-                        text: {
-                            text: ['Failed to find booking.']
-                        }
-                    }
-                ]
-            }
-        };
     }
 };
 
 const handleCreateBooking = async (functionArgs) => {
     try {
         await createBooking(functionArgs);
-        return {
-            fulfillment_response: {
-                messages: [
-                    {
-                        text: {
-                            text: ['Booking created successfully.']
-                        }
-                    }
-                ]
-            }
-        };
     } catch (error) {
         console.error('Error creating booking:', error);
-        return {
-            fulfillment_response: {
-                messages: [
-                    {
-                        text: {
-                            text: ['Failed to create booking.']
-                        }
-                    }
-                ]
-            }
-        };
     }
 };
 
 const handleDeleteBooking = async (functionArgs) => {
     try {
         await deleteBooking(functionArgs);
-        return {
-            fulfillment_response: {
-                messages: [
-                    {
-                        text: {
-                            text: ['Booking deleted successfully.']
-                        }
-                    }
-                ]
-            }
-        };
     } catch (error) {
-        console.error('Error deleting booking:', error);
-        return {
-            fulfillment_response: {
-                messages: [
-                    {
-                        text: {
-                            text: ['Failed to delete booking.']
-                        }
-                    }
-                ]
-            }
-        };
+        return { message: 'Error updating booking:', error };
     }
 };
 
 const handleUpdateBooking = async (functionArgs) => {
     try {
         await updateBooking(functionArgs);
-        return {
-            fulfillment_response: {
-                messages: [
-                    {
-                        text: {
-                            text: ['Booking updated successfully.']
-                        }
-                    }
-                ]
-            }
-        };
     } catch (error) {
-        console.error('Error updating booking:', error);
-        return {
-            fulfillment_response: {
-                messages: [
-                    {
-                        text: {
-                            text: ['Failed to update booking.']
-                        }
-                    }
-                ]
-            }
-        };
+        return { message: 'Error updating booking:', error };
     }
 };
 
-module.exports = {
-    handleDialogflowRequest,
-};
+module.exports = { handleDialogflowRequest };

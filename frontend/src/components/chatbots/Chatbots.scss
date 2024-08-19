@@ -7,6 +7,11 @@
   overflow: hidden;
 }
 
+.info-header{
+  display: flex;
+  align-items: center;
+}
+
 .chat-container {
   display: flex;
   flex-direction: column;

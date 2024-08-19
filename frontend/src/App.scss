@@ -8,6 +8,17 @@ body {
   font-size: 14px;
 }
 
+@font-face {
+  font-family: 'SupperBubbly';
+  src: url('../public/SuperBubbly.ttf') format('truetype');
+}
+
+.chatta-name {
+  margin-left: 10px;
+  font-size: 30px;
+  font-family: 'SupperBubbly', sans-serif;
+}
+
 .app {
   display: flex;
   justify-content: center;

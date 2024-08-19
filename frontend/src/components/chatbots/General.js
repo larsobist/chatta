@@ -18,14 +18,20 @@ const General = ({ selectedUser, language }) => {
     return (
         <div>
             <div className="info-container">
-                <h1>{selectedUser?.name ?? 'User'}'s chatta</h1>
+                <div className="info-header">
+                    <h1> {selectedUser?.name ?? 'User'}'s </h1>
+                    <div className="chatta-name">
+                        CHATTA
+                    </div>
+                </div>
+
                 <ToggleButtonGroup
                     value={chatbot}
                     exclusive
                     onChange={handleChatbot}
                 >
                     <ToggleButton value="rule">
-                        {t('ruleBased')}
+                    {t('ruleBased')}
                     </ToggleButton>
                     <ToggleButton value="generative">
                         {t('generative')}

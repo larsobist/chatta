@@ -8,6 +8,7 @@ const getCurrentDate = () => {
 };
 
 const initializeMessageHistory = (language) => {
+    console.log(language)
     const currentDate = getCurrentDate();
     messageHistory.push({
         role: "system",
@@ -45,10 +46,8 @@ const handleToolCalls = async (toolCalls) => {
 };
 
 const handleOpenAIRequest = async (textInput, language) => {
-    if (messageHistory.length === 0) {
-        initializeMessageHistory(language);
-    }
 
+    initializeMessageHistory(language);
     addMessageToHistory("user", textInput);
 
     const tools = [

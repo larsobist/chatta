@@ -1,5 +1,5 @@
 const openai = require('../config/openai');
-const { findBooking, createBooking, updateBooking, deleteBooking } = require('./bookingService');
+const { findBooking, createBooking, updateBooking, deleteBooking, findRooms } = require('./bookingService');
 
 let messageHistory = [];
 
@@ -28,7 +28,8 @@ const handleToolCalls = async (toolCalls) => {
         find_booking: findBooking,
         create_booking: createBooking,
         delete_booking: deleteBooking,
-        update_booking: updateBooking
+        update_booking: updateBooking,
+        find_rooms: findRooms
     };
 
     for (const toolCall of toolCalls) {
@@ -46,7 +47,6 @@ const handleToolCalls = async (toolCalls) => {
 };
 
 const handleOpenAIRequest = async (textInput, language) => {
-
     initializeMessageHistory(language);
     addMessageToHistory("user", textInput);
 
@@ -55,12 +55,14 @@ const handleOpenAIRequest = async (textInput, language) => {
             type: "function",
             function: {
                 name: "find_booking",
-                description: "Find a reservation with the given params",
+                description: "Find a reservation with the given params or show all when no params are given",
                 parameters: {
                     type: "object",
                     properties: {
                         date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
+                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" },
+                        roomNumber: { type: "string", description: "The room number for the booking" },
+                        equipment: { type: "array", items: { type: "string" }, description: "List of equipment needed in the room" }
                     },
                     required: []
                 }
@@ -76,7 +78,8 @@ const handleOpenAIRequest = async (textInput, language) => {
                     properties: {
                         roomNumber: { type: "string", description: "The room number for the booking" },
                         date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
+                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" },
+                        equipment: { type: "array", items: { type: "string" }, description: "List of equipment needed in the room" }
                     },
                     required: ["date", "timeSlot"]
                 }
@@ -114,6 +117,22 @@ const handleOpenAIRequest = async (textInput, language) => {
                         new_timeSlot: { type: "string", description: "The updated time of the booking, e.g., 12:00, always in HH:MM format" }
                     },
                     required: ["date", "timeSlot", "new_date", "new_timeSlot"]
+                }
+            }
+        },
+        {
+            type: "function",
+            function: {
+                name: "find_rooms",
+                description: "List all rooms available to the user",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        roomNumber: { type: "string", description: "The room number of the booking to delete, e.g., 101" },
+                        equipment: { type: "array", items: { type: "string" }, description: "List of equipment required, e.g., PC or Whiteboard"
+                        }
+                    },
+                    required: []
                 }
             }
         }

@@ -17,6 +17,44 @@ const getCurrentUsername = async () => {
     return currentUser.name;
 };
 
+const findRooms = async (roomNumber = null, equipment = []) => {
+    try {
+        const currentUser = await getCurrentUser();
+        let userRoles = currentUser.role;
+
+        // Ensure userRoles is an array, to handle multiple roles
+        if (!Array.isArray(userRoles)) { userRoles = [userRoles]; }
+
+        const roomsCollection = getCollection('rooms');
+        let rooms = await roomsCollection.find().toArray();
+
+        // Filter rooms where any of the user's roles are in the allowedRoles array
+        rooms = rooms.filter(room => {
+            return userRoles.some(role => room.allowedRoles.includes(role));
+        });
+        console.log('Filtered rooms by roles:', rooms); // Debugging log to confirm filtered rooms
+
+        // If a room number is specified, filter by room number
+        if (!roomNumber == null) {
+            rooms = rooms.filter(room => room.roomNumber === roomNumber);
+            console.log(`Filtered rooms by room number ${roomNumber}:`, rooms);
+        }
+
+        // If equipment is specified, filter by equipment
+        if (equipment.length > 0) {
+            rooms = rooms.filter(room => {
+                return equipment.every(item => room.equipment.includes(item));
+            });
+            console.log(`Filtered rooms by equipment [${equipment.join(', ')}]:`, rooms);
+        }
+
+        return rooms;
+    } catch (error) {
+        console.error('Error finding rooms:', error);
+        throw error;
+    }
+};
+
 const findBooking = async (functionArgs) => {
     const userName = await getCurrentUsername();
     try {
@@ -95,4 +133,4 @@ const deleteBooking = async (query) => {
     }
 };
 
-module.exports = { findBooking, createBooking, updateBooking, deleteBooking, setSocket, setCollections };
+module.exports = { findBooking, createBooking, updateBooking, deleteBooking, findRooms, setSocket, setCollections };

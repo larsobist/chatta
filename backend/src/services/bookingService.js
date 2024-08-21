@@ -130,6 +130,29 @@ const updateBooking = async (query) => {
             throw new Error("No valid update fields provided");
         }
 
+        // Step 1: Check if new room and timeslot are available (if provided)
+        if (new_roomNumber || new_date || new_timeSlot) {
+            const availableRooms = await findRooms({ roomNumber: new_roomNumber || originalQuery.roomNumber });
+
+            if (availableRooms.length === 0) {
+                throw new Error('No available rooms match your criteria or you don’t have access to any rooms.');
+            }
+
+            const bookedRooms = await bookingsCollection.find({
+                date: new_date || originalQuery.date,
+                timeSlot: new_timeSlot || originalQuery.timeSlot
+            }).toArray();
+
+            const roomAvailable = availableRooms.some(room =>
+                room.roomNumber === (new_roomNumber || originalQuery.roomNumber) &&
+                !bookedRooms.some(booking => booking.roomNumber === room.roomNumber)
+            );
+
+            if (!roomAvailable) {
+                throw new Error('The room is already booked for the selected date and time.');
+            }
+        }
+
         console.log('Original query:', originalQuery);
         console.log('Update fields:', updateFields);
 

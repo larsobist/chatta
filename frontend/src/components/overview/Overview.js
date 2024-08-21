@@ -21,6 +21,7 @@ const Overview = ({ selectedUser }) => {
 
         socket.on('bookingChanged', () => {
             fetchBookings();
+            setView('bookings');
         });
         socket.on('userChanged', () => {
             fetchBookings();

@@ -22,7 +22,7 @@
   "ruleBased": "Regelbasiert",
   "generative": "Generativ",
   "typeMessage": "Schreib deine Nachricht hier...",
-  "findBooking": "Finde meine Buchung",
+  "findRoom": "Finde Räume",
   "addBooking": "Erstelle eine Reservierung",
   "updateBooking": "Update eine Buchung",
   "deleteBooking": "Lösche eine Reservierung",

@@ -13,7 +13,7 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
     const chatBoxRef = useRef(null);
 
     const sampleMessages = [
-        t('findBooking'),
+        t('findRoom'),
         t('addBooking'),
         t('updateBooking'),
         t('deleteBooking')

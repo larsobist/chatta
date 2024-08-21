@@ -12,13 +12,14 @@ const setCollections = async () => {
     bookingsCollection = getCollection('bookings');
 };
 
-const getCurrentUsername = async () => {
+const getCurrentUserID = async () => {
     const currentUser = await getCurrentUser();
-    return currentUser.name;
+    return currentUser._id;
 };
 
-const findRooms = async (roomNumber = null, equipment = []) => {
+const findRooms = async (query) => {
     try {
+        const { roomNumber, equipment = [] } = query;
         const currentUser = await getCurrentUser();
         let userRoles = currentUser.role;
 
@@ -32,10 +33,10 @@ const findRooms = async (roomNumber = null, equipment = []) => {
         rooms = rooms.filter(room => {
             return userRoles.some(role => room.allowedRoles.includes(role));
         });
-        console.log('Filtered rooms by roles:', rooms); // Debugging log to confirm filtered rooms
+        console.log('Filtered rooms by roles:', rooms);
 
         // If a room number is specified, filter by room number
-        if (!roomNumber == null) {
+        if (roomNumber) {
             rooms = rooms.filter(room => room.roomNumber === roomNumber);
             console.log(`Filtered rooms by room number ${roomNumber}:`, rooms);
         }
@@ -43,7 +44,7 @@ const findRooms = async (roomNumber = null, equipment = []) => {
         // If equipment is specified, filter by equipment
         if (equipment.length > 0) {
             rooms = rooms.filter(room => {
-                return equipment.every(item => room.equipment.includes(item));
+                return equipment.every(item => (room.equipment || []).includes(item));
             });
             console.log(`Filtered rooms by equipment [${equipment.join(', ')}]:`, rooms);
         }
@@ -56,9 +57,9 @@ const findRooms = async (roomNumber = null, equipment = []) => {
 };
 
 const findBooking = async (functionArgs) => {
-    const userName = await getCurrentUsername();
+    const userID = await getCurrentUserID();
     try {
-        const query = { userName, ...functionArgs };
+        const query = { userID, ...functionArgs };
         const result = await bookingsCollection.find(query).toArray();
         console.log('findBooking result:', result);
         return result;
@@ -69,12 +70,42 @@ const findBooking = async (functionArgs) => {
 };
 
 const createBooking = async (bookingDetails) => {
-    const userName = await getCurrentUsername();
+    const userID = await getCurrentUserID();
     try {
-        const result = await bookingsCollection.insertOne({ userName, ...bookingDetails });
+        const { roomNumber, date, timeSlot, equipment = [] } = bookingDetails;
+
+        // Step 1: Use findRooms to get all accessible rooms based on user's roles and desired equipment
+        const availableRooms = await findRooms({ roomNumber, equipment });
+
+        if (availableRooms.length === 0) {
+            throw new Error('No available rooms match your criteria or you don’t have access to any rooms.');
+        }
+
+        // Step 2: Filter out rooms that are already booked for the same date and time
+        const bookedRooms = await bookingsCollection.find({ date, timeSlot }).toArray();
+        const filteredRooms = availableRooms.filter(room =>
+            !bookedRooms.some(booking => booking.roomNumber === room.roomNumber)
+        );
+
+        if (filteredRooms.length === 0) {
+            throw new Error('All rooms matching your criteria are already booked for the selected date and time.');
+        }
+
+        // Step 3: Select the first room if no specific roomNumber is provided
+        const selectedRoom = filteredRooms[0];
+
+        // Step 4: Create the booking with the selected room
+        const finalBookingDetails = {
+            userID,
+            roomNumber: selectedRoom.roomNumber,
+            date,
+            timeSlot
+        };
+
+        const result = await bookingsCollection.insertOne(finalBookingDetails);
 
         if (io) {
-            io.emit('bookingChanged', { action: 'created', booking: { userName, ...bookingDetails } });
+            io.emit('bookingChanged', { action: 'created', booking: finalBookingDetails });
         }
 
         return result;
@@ -84,8 +115,9 @@ const createBooking = async (bookingDetails) => {
     }
 };
 
+
 const updateBooking = async (query) => {
-    const userName = await getCurrentUsername();
+    const userID = await getCurrentUserID();
     try {
         const { new_roomNumber, new_date, new_timeSlot, ...originalQuery } = query;
 
@@ -102,12 +134,12 @@ const updateBooking = async (query) => {
         console.log('Update fields:', updateFields);
 
         const result = await bookingsCollection.updateOne(
-            { userName, ...originalQuery },
+            { userID, ...originalQuery },
             { $set: updateFields }
         );
 
         if (io) {
-            io.emit('bookingChanged', { action: 'updated', booking: { userName, ...originalQuery, ...updateFields } });
+            io.emit('bookingChanged', { action: 'updated', booking: { userID, ...originalQuery, ...updateFields } });
         }
 
         return result;
@@ -118,12 +150,12 @@ const updateBooking = async (query) => {
 };
 
 const deleteBooking = async (query) => {
-    const userName = await getCurrentUsername();
+    const userID = await getCurrentUserID();
     try {
-        const result = await bookingsCollection.deleteOne({ userName, ...query });
+        const result = await bookingsCollection.deleteOne({ userID, ...query });
 
         if (io) {
-            io.emit('bookingChanged', { action: 'deleted', booking: { userName, ...query } });
+            io.emit('bookingChanged', { action: 'deleted', booking: { userID, ...query } });
         }
 
         return result;

@@ -4,6 +4,7 @@ let currentUser;
 let io;
 let usersCollection;
 let bookingsCollection;
+let roomsCollection;
 
 const setSocket = (socketIo) => {
     io = socketIo;
@@ -12,6 +13,7 @@ const setSocket = (socketIo) => {
 const setCollections = async () => {
     usersCollection = getCollection('users');
     bookingsCollection = getCollection('bookings');
+    roomsCollection = getCollection('rooms');
 };
 
 const getUsers = async () => {
@@ -23,7 +25,7 @@ const updateSelectedUser = async (user) => {
     if (user && users.find(u => u.id === user.id)) {
         currentUser = user;
         if (io) {
-            io.emit('bookingChanged');
+            io.emit('userChanged');
         }
         return currentUser;
     } else {
@@ -31,8 +33,12 @@ const updateSelectedUser = async (user) => {
     }
 };
 
-const getUserBookings = async (userName) => {
-    return await bookingsCollection.find({ userName }).toArray();
+const getUserBookings = async (userID) => {
+    return await bookingsCollection.find({ userID }).toArray();
+};
+
+const getUserPossibleRooms = async (userRoles) => {
+    return await roomsCollection.find({ allowedRoles: { $in: userRoles } }).toArray();
 };
 
 const getCurrentUser = async () => {
@@ -42,4 +48,4 @@ const getCurrentUser = async () => {
     return await usersCollection.findOne();
 };
 
-module.exports = { getUsers, updateSelectedUser, getUserBookings, getCurrentUser, setSocket, setCollections };
+module.exports = { getUsers, updateSelectedUser, getUserBookings, getUserPossibleRooms, getCurrentUser, setSocket, setCollections };

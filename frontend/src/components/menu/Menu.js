@@ -13,15 +13,12 @@ const Menu = ({ selectedUser, setSelectedUser, setLanguage }) => {
     const colors = useMemo(() => [
         "rgb(63, 81, 181)",  // #3f51b5
         "rgb(33, 150, 243)", // #2196f3
-        "rgb(3, 169, 244)",  // #03a9f4
         "rgb(0, 188, 212)"   // #00bcd4
     ], []);
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                console.log('Fetching users...');
-
                 // Fetch users and delay by 5 seconds in parallel
                 const fetchPromise = fetch(`${process.env.REACT_APP_BACKEND_LOCAL_URL}/users`, {
                     headers: {
@@ -40,13 +37,11 @@ const Menu = ({ selectedUser, setSelectedUser, setLanguage }) => {
                 }
 
                 const data = await response.json();
-                console.log('Fetched data:', data);
                 const usersWithColors = data.map((user, index) => ({
                     ...user,
                     color: colors[index % colors.length]
                 }));
                 setUsers(usersWithColors);
-                console.log('Users set:', usersWithColors);
 
                 if (usersWithColors.length > 0 && !selectedUser) {
                     const initialUser = usersWithColors[0];

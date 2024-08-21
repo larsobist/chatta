@@ -12,7 +12,7 @@ const initializeMessageHistory = (language) => {
     const currentDate = getCurrentDate();
     messageHistory.push({
         role: "system",
-        content: `You are a helpful room booking assistant. The current date is ${currentDate}. Help the user with all necessary information questions and make calls to the database if needed. You can only answer in the language ${language}, you don't know any other language.`
+        content: `You are a helpful room booking assistant for a company. The current date is ${currentDate}. Help the user with all necessary information and questions related to room reservations, including room availability, equipment, and details. You can only answer in the language ${language}. You only work within the context of a booking service, so if the user asks something unrelated to reservations or room details, respond that you can only assist with room reservations and information related to them.`
     });
 };
 
@@ -72,14 +72,14 @@ const handleOpenAIRequest = async (textInput, language) => {
             type: "function",
             function: {
                 name: "create_booking",
-                description: "Create a reservation with the given params",
+                description: "Create a reservation with the given params date and timeslot, the other params are optional",
                 parameters: {
                     type: "object",
                     properties: {
-                        roomNumber: { type: "string", description: "The room number for the booking" },
+                        roomNumber: { type: "string", description: "Optional: The room number for the booking" },
                         date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
                         timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" },
-                        equipment: { type: "array", items: { type: "string" }, description: "List of equipment needed in the room" }
+                        equipment: { type: "array", items: { type: "string" }, description: "Optional: List of equipment needed in the room" }
                     },
                     required: ["date", "timeSlot"]
                 }

@@ -24,8 +24,19 @@ const updateSelectedUser = async (req, res) => {
 const getUserBookings = async (req, res) => {
     try {
         const currentUser = await userService.getCurrentUser();
-        const bookings = await userService.getUserBookings(currentUser.name);
+        const bookings = await userService.getUserBookings(currentUser._id);
         res.json(bookings);
+    } catch (error) {
+        console.error('Error fetching bookings:', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+const getUserPossibleRooms = async (req, res) => {
+    try {
+        const currentUser = await userService.getCurrentUser();
+        const rooms = await userService.getUserPossibleRooms(currentUser.role);
+        res.json(rooms);
     } catch (error) {
         console.error('Error fetching bookings:', error);
         res.status(500).send('Internal Server Error');
@@ -42,4 +53,4 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
-module.exports = { getUsers, updateSelectedUser, getUserBookings, getCurrentUser };
+module.exports = { getUsers, updateSelectedUser, getUserBookings, getUserPossibleRooms, getCurrentUser };

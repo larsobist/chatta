@@ -1,5 +1,5 @@
 const openai = require('../config/openai');
-const { findBooking, createBooking, updateBooking, deleteBooking, findRooms } = require('./bookingService');
+const { findBooking, createBooking, updateBooking, deleteBooking, getAvailableRooms } = require('./bookingService');
 
 let messageHistory = [];
 
@@ -12,7 +12,22 @@ const initializeMessageHistory = (language) => {
     const currentDate = getCurrentDate();
     messageHistory.push({
         role: "system",
-        content: `You are a helpful room booking assistant for a company. The current date is ${currentDate}. Your primary role is to assist the user with all necessary information and questions related to room reservations, including room availability, equipment, and room details. You should also assist with related queries, such as requests for specific equipment (e.g., a beamer) or amenities in the rooms. If a user asks about anything outside the scope of room reservations or room-related information, gently remind them that your assistance is focused on room reservations and related services, but try to accommodate their request if it can be related to the context of a room or booking.`
+        content: `
+        You are a helpful room booking assistant for a company called chatta. 
+        Your primary role is to assist users with all necessary information and tasks related to room reservations, 
+        including checking room availability, viewing equipment options, and managing room details. 
+        You can also help with related queries, such as requests for specific equipment (e.g., a projector) within rooms.
+        The functions you can perform include:
+        1. find_booking: Find a reservation with the given parameters or display all bookings if no parameters are provided.
+        2. create_booking: Create a new reservation with the specified date and time slot. Other parameters are optional.
+        3. delete_booking: Delete an existing reservation with the specified parameters.
+        4. update_booking: Update an existing reservation with the given parameters.
+        5. get_available_rooms: List all rooms available to the user based on the specified parameters. Sometimes the user asks to create a booking with that data.
+        When a request like creating a booking, updating, or deleting, send a validation message.
+        Today's date is ${currentDate}.
+        If a user asks about anything outside the scope of room-related information, gently remind them that your assistance is focused on room reservations and related services.
+        Keep your answers compact.
+        `
     });
 };
 
@@ -29,7 +44,7 @@ const handleToolCalls = async (toolCalls) => {
         create_booking: createBooking,
         delete_booking: deleteBooking,
         update_booking: updateBooking,
-        find_rooms: findRooms
+        get_available_rooms: getAvailableRooms
     };
 
     for (const toolCall of toolCalls) {
@@ -76,10 +91,10 @@ const handleOpenAIRequest = async (textInput, language) => {
                 parameters: {
                     type: "object",
                     properties: {
-                        roomNumber: { type: "string", description: "Optional: The room number for the booking" },
+                        roomNumber: { type: "string", description: "The room number for the booking" },
                         date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
                         timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" },
-                        equipment: { type: "array", items: { type: "string" }, description: "Optional: List of equipment needed in the room" }
+                        equipment: { type: "array", items: { type: "string" }, description: "List of equipment needed in the room" }
                     },
                     required: ["date", "timeSlot"]
                 }
@@ -93,11 +108,11 @@ const handleOpenAIRequest = async (textInput, language) => {
                 parameters: {
                     type: "object",
                     properties: {
-                        roomNumber: { type: "string", description: "The room number of the booking to delete, e.g., 101" },
-                        date: { type: "string", description: "The date of the booking to delete, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The time of the booking to delete, e.g., 11:00, always in HH:MM format" }
+                        roomNumber: { type: "string", description: "The room number of the booking, e.g., 101" },
+                        date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
+                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
                     },
-                    required: ["date"]
+                    required: ["date", "roomNumber", "timeSlot"]
                 }
             }
         },
@@ -109,10 +124,10 @@ const handleOpenAIRequest = async (textInput, language) => {
                 parameters: {
                     type: "object",
                     properties: {
-                        roomNumber: { type: "string", description: "The room number of the booking to delete, e.g., 101" },
+                        roomNumber: { type: "string", description: "The room number of the booking, e.g., 101" },
                         date: { type: "string", description: "The current date of the booking, e.g., 2024-06-26" },
                         timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:MM format" },
-                        new_roomNumber: { type: "string", description: "The updated room number of the booking to delete, e.g., 101" },
+                        new_roomNumber: { type: "string", description: "The updated room number of the booking, e.g., 101" },
                         new_date: { type: "string", description: "The updated date of the booking, e.g., 2024-06-27" },
                         new_timeSlot: { type: "string", description: "The updated time of the booking, e.g., 12:00, always in HH:MM format" }
                     },
@@ -123,12 +138,14 @@ const handleOpenAIRequest = async (textInput, language) => {
         {
             type: "function",
             function: {
-                name: "find_rooms",
-                description: "List all rooms available to the user",
+                name: "get_available_rooms",
+                description: "List all rooms available to the user and proceed to create a reservation one after asking",
                 parameters: {
                     type: "object",
                     properties: {
-                        roomNumber: { type: "string", description: "The room number of the booking to delete, e.g., 101" },
+                        date: { type: "string", description: "The current date of the booking, e.g., 2024-06-26" },
+                        timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:MM format" },
+                        roomNumber: { type: "string", description: "The room number of the booking, e.g., 101" },
                         equipment: { type: "array", items: { type: "string" }, description: "List of equipment required, e.g., PC or Whiteboard"
                         }
                     },

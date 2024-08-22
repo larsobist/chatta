@@ -17,9 +17,10 @@ const getCurrentUserID = async () => {
     return currentUser._id;
 };
 
-const findRooms = async (query) => {
+const getAvailableRooms = async (query) => {
     try {
-        const { roomNumber, equipment = [] } = query;
+        const { roomNumber, equipment = [], date, timeSlot } = query;
+        console.log(query)
         const currentUser = await getCurrentUser();
         let userRoles = currentUser.role;
 
@@ -49,6 +50,15 @@ const findRooms = async (query) => {
             console.log(`Filtered rooms by equipment [${equipment.join(', ')}]:`, rooms);
         }
 
+        // Check for room availability if date and timeSlot are provided
+        if (date && timeSlot) {
+            const bookedRooms = await bookingsCollection.find({ date, timeSlot }).toArray();
+            rooms = rooms.filter(room =>
+                !bookedRooms.some(booking => booking.roomNumber === room.roomNumber)
+            );
+            console.log(`Filtered rooms by availability on ${date} at ${timeSlot}:`, rooms);
+        }
+
         return rooms;
     } catch (error) {
         console.error('Error finding rooms:', error);
@@ -74,27 +84,17 @@ const createBooking = async (bookingDetails) => {
     try {
         const { roomNumber, date, timeSlot, equipment = [] } = bookingDetails;
 
-        // Step 1: Use findRooms to get all accessible rooms based on user's roles and desired equipment
-        const availableRooms = await findRooms({ roomNumber, equipment });
+        // Use findRooms to get all accessible and available rooms
+        const availableRooms = await getAvailableRooms({ roomNumber, equipment, date, timeSlot });
 
         if (availableRooms.length === 0) {
             throw new Error('No available rooms match your criteria or you don’t have access to any rooms.');
         }
 
-        // Step 2: Filter out rooms that are already booked for the same date and time
-        const bookedRooms = await bookingsCollection.find({ date, timeSlot }).toArray();
-        const filteredRooms = availableRooms.filter(room =>
-            !bookedRooms.some(booking => booking.roomNumber === room.roomNumber)
-        );
+        // Select the first room if no specific roomNumber is provided
+        const selectedRoom = availableRooms[0];
 
-        if (filteredRooms.length === 0) {
-            throw new Error('All rooms matching your criteria are already booked for the selected date and time.');
-        }
-
-        // Step 3: Select the first room if no specific roomNumber is provided
-        const selectedRoom = filteredRooms[0];
-
-        // Step 4: Create the booking with the selected room
+        // Create the booking with the selected room
         const finalBookingDetails = {
             userID,
             roomNumber: selectedRoom.roomNumber,
@@ -115,7 +115,6 @@ const createBooking = async (bookingDetails) => {
     }
 };
 
-
 const updateBooking = async (query) => {
     const userID = await getCurrentUserID();
     try {
@@ -130,26 +129,16 @@ const updateBooking = async (query) => {
             throw new Error("No valid update fields provided");
         }
 
-        // Step 1: Check if new room and timeslot are available (if provided)
+        // Check if new room and timeslot are available (if provided)
         if (new_roomNumber || new_date || new_timeSlot) {
-            const availableRooms = await findRooms({ roomNumber: new_roomNumber || originalQuery.roomNumber });
+            const availableRooms = await getAvailableRooms({
+                roomNumber: new_roomNumber || originalQuery.roomNumber,
+                date: new_date || originalQuery.date,
+                timeSlot: new_timeSlot || originalQuery.timeSlot
+            });
 
             if (availableRooms.length === 0) {
                 throw new Error('No available rooms match your criteria or you don’t have access to any rooms.');
-            }
-
-            const bookedRooms = await bookingsCollection.find({
-                date: new_date || originalQuery.date,
-                timeSlot: new_timeSlot || originalQuery.timeSlot
-            }).toArray();
-
-            const roomAvailable = availableRooms.some(room =>
-                room.roomNumber === (new_roomNumber || originalQuery.roomNumber) &&
-                !bookedRooms.some(booking => booking.roomNumber === room.roomNumber)
-            );
-
-            if (!roomAvailable) {
-                throw new Error('The room is already booked for the selected date and time.');
             }
         }
 
@@ -175,12 +164,14 @@ const updateBooking = async (query) => {
 const deleteBooking = async (query) => {
     const userID = await getCurrentUserID();
     try {
+        console.log(query, userID)
         const result = await bookingsCollection.deleteOne({ userID, ...query });
 
         if (io) {
             io.emit('bookingChanged', { action: 'deleted', booking: { userID, ...query } });
         }
 
+        console.log(result)
         return result;
     } catch (error) {
         console.error('Error deleting booking:', error);
@@ -188,4 +179,4 @@ const deleteBooking = async (query) => {
     }
 };
 
-module.exports = { findBooking, createBooking, updateBooking, deleteBooking, findRooms, setSocket, setCollections };
+module.exports = { findBooking, createBooking, updateBooking, deleteBooking, getAvailableRooms, setSocket, setCollections };

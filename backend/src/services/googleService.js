@@ -1,4 +1,4 @@
-const { findBooking, createBooking, deleteBooking, updateBooking } = require('./bookingService');
+const { findBooking, createBooking, deleteBooking, updateBooking, getAvailableRooms} = require('./bookingService');
 
 const handleDialogflowRequest = async (data) => {
     const intentName = data.fulfillmentInfo.tag;
@@ -26,6 +26,9 @@ const handleDialogflowRequest = async (data) => {
             case 'updateBooking':
                 await handleUpdateBooking(functionArgs);
                 break;
+            case 'getAvailableRooms':
+                await handleGetAvailableRooms(functionArgs);
+                break;
             default:
                 console.log(`Intent ${intentName} not handled in the webhook.`);
         }
@@ -41,11 +44,12 @@ const formatDateString = (dateObj) => {
 const createFunctionArgs = (data, formattedDate, formattedNewDate) => {
     const functionArgs = {};
     if (formattedDate) functionArgs.date = formattedDate;
-    if (data.sessionInfo.parameters.room) functionArgs.roomNumber = data.sessionInfo.parameters.room.toString();
+    if (data.sessionInfo.parameters.roomnumber) functionArgs.roomNumber = data.sessionInfo.parameters.roomnumber.toString();
     if (data.sessionInfo.parameters.timeslot) functionArgs.timeSlot = data.sessionInfo.parameters.timeslot;
     if (formattedNewDate) functionArgs.new_date = formattedNewDate;
-    if (data.sessionInfo.parameters.new_room) functionArgs.new_roomNumber = data.sessionInfo.parameters.new_room.toString();
+    if (data.sessionInfo.parameters.new_roomnumber) functionArgs.new_roomNumber = data.sessionInfo.parameters.new_roomnumber.toString();
     if (data.sessionInfo.parameters.new_timeslot) functionArgs.new_timeSlot = data.sessionInfo.parameters.new_timeslot;
+    if (data.sessionInfo.parameters.equipment) functionArgs.equipment = data.sessionInfo.parameters.equipment;
     return functionArgs;
 };
 
@@ -78,6 +82,14 @@ const handleUpdateBooking = async (functionArgs) => {
         await updateBooking(functionArgs);
     } catch (error) {
         return { message: 'Error updating booking:', error };
+    }
+};
+
+const handleGetAvailableRooms = async (functionArgs) => {
+    try {
+        await getAvailableRooms(functionArgs);
+    } catch (error) {
+        return { message: 'Error fetching rooms:', error };
     }
 };
 

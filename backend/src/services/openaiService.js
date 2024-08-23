@@ -87,7 +87,7 @@ const handleOpenAIRequest = async (textInput, language) => {
             type: "function",
             function: {
                 name: "create_booking",
-                description: "Create a reservation with the given params date and timeslot, the other params are optional",
+                description: "Create a reservation with the params date and timeslot, after receiving that input, ask if they want a specific room based on the roomnumber or equipment.",
                 parameters: {
                     type: "object",
                     properties: {

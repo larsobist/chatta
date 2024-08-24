@@ -33,8 +33,8 @@ const updateSelectedUser = async (user) => {
     }
 };
 
-const getUserBookings = async (userID) => {
-    return await bookingsCollection.find({ userID }).toArray();
+const getUserBookings = async (username) => {
+    return  await bookingsCollection.find({ username }).toArray();
 };
 
 const getUserPossibleRooms = async (userRoles) => {

@@ -47,7 +47,7 @@ const startServer = async () => {
     await userService.setCollections();
 
     server.listen(process.env.PORT || 8080, () => {
-        console.log(`App listening on ${process.env.PORT}`);
+        console.log(`App listening`);
     });
 };
 

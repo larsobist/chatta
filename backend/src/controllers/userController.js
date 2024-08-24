@@ -24,7 +24,7 @@ const updateSelectedUser = async (req, res) => {
 const getUserBookings = async (req, res) => {
     try {
         const currentUser = await userService.getCurrentUser();
-        const bookings = await userService.getUserBookings(currentUser._id);
+        const bookings = await userService.getUserBookings(currentUser.name);
         res.json(bookings);
     } catch (error) {
         console.error('Error fetching bookings:', error);

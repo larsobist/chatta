@@ -15,8 +15,7 @@ const handleDialogflowRequest = async (data) => {
     try {
         switch (intentName) {
             case 'findBooking':
-                await handleFindBooking(functionArgs);
-                break;
+                return await handleFindBooking(functionArgs);
             case 'createBooking':
                 await handleCreateBooking(functionArgs);
                 break;
@@ -27,8 +26,7 @@ const handleDialogflowRequest = async (data) => {
                 await handleUpdateBooking(functionArgs);
                 break;
             case 'getAvailableRooms':
-                await handleGetAvailableRooms(functionArgs);
-                break;
+                return await handleGetAvailableRooms(functionArgs);
             default:
                 console.log(`Intent ${intentName} not handled in the webhook.`);
         }
@@ -55,7 +53,13 @@ const createFunctionArgs = (data, formattedDate, formattedNewDate) => {
 
 const handleFindBooking = async (functionArgs) => {
     try {
-        await findBooking(functionArgs);
+        const result = await findBooking(functionArgs);
+        const text = result.length > 0 ? result.map(booking => {
+            return `Nr: ${booking.roomNumber}, ${booking.date}, ${booking.timeSlot}`;
+        }).join('\n') : 'Nichts gefunden für deine Kriterien';
+        return {
+            fulfillment_response: { messages: [{ text: { text: [`\n${text}`] }}]}
+        };
     } catch (error) {
         console.error('Error finding booking:', error);
     }
@@ -87,7 +91,14 @@ const handleUpdateBooking = async (functionArgs) => {
 
 const handleGetAvailableRooms = async (functionArgs) => {
     try {
-        await getAvailableRooms(functionArgs);
+        const result = await getAvailableRooms(functionArgs);
+        const text = result.length > 0 ? result.map(room => {
+            const equipmentList = room.equipment.join(', ');
+            return `Nr: ${room.roomNumber}, Equipment: ${equipmentList}`;
+        }).join('\n') : 'Nichts gefunden für deine Kriterien';
+        return {
+            fulfillment_response: { messages: [{ text: { text: [`\n${text}`] }}]}
+        };
     } catch (error) {
         return { message: 'Error fetching rooms:', error };
     }

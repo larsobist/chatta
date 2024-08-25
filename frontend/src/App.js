@@ -3,7 +3,7 @@ import './App.scss';
 import './i18n';
 import General from "./components/chatbots/General";
 import Menu from "./components/menu/Menu";
-import Overview from "./components/overview/Overview";
+import Overviews from "./components/overviews/Overviews";
 import i18n from './i18n';
 
 const App = () => {
@@ -34,7 +34,7 @@ const App = () => {
                             <General key={selectedUser.id} selectedUser={selectedUser} language={language} />
                         </div>
                         <div className="overview">
-                            <Overview key={selectedUser.id} selectedUser={selectedUser} />
+                            <Overviews key={selectedUser.id} selectedUser={selectedUser} />
                         </div>
                     </div>
                 )}

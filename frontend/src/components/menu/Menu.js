@@ -89,8 +89,8 @@ const Menu = ({ selectedUser, setSelectedUser, setLanguage }) => {
     };
 
     const languages = [
-        { code: 'en', color: 'rgb(189, 189, 189)' },
-        { code: 'de', color: 'rgb(224, 224, 224)' }
+        { code: 'de', color: 'rgb(189, 189, 189)' },
+        { code: 'en', color: 'rgb(224, 224, 224)' }
     ];
 
     if (loading || error) {

@@ -34,7 +34,6 @@ const getAvailableRooms = async (query) => {
         rooms = rooms.filter(room => {
             return userRoles.some(role => room.allowedRoles.includes(role));
         });
-        console.log('Filtered by roles:', rooms);
 
         // If a room number is specified, filter by room number
         if (roomNumber) rooms = rooms.filter(room => room.roomNumber === roomNumber);
@@ -94,7 +93,9 @@ const createBooking = async (bookingDetails) => {
 
         const result = await bookingsCollection.insertOne(finalBookingDetails);
 
-        if (io) io.emit('bookingChanged', { action: 'created', booking: finalBookingDetails });
+        if (io) {
+            io.emit('bookingChanged', { action: 'created', booking: finalBookingDetails });
+        }
 
         return result;
     } catch (error) {
@@ -131,7 +132,9 @@ const updateBooking = async (query) => {
             { $set: updateFields }
         );
 
-        if (io) io.emit('bookingChanged', { action: 'updated', booking: { username, ...originalQuery, ...updateFields } });
+        if (io) {
+            io.emit('bookingChanged', { action: 'updated', booking: { username, ...originalQuery, ...updateFields } });
+        }
 
         return result;
     } catch (error) {
@@ -144,7 +147,9 @@ const deleteBooking = async (query) => {
     const username = await getCurrentUsername();
     try {
         const result = await bookingsCollection.deleteOne({ username, ...query });
-        if (io) io.emit('bookingChanged', { action: 'deleted', booking: { username, ...query } });
+        if (io) {
+            io.emit('bookingChanged', { action: 'deleted', booking: { username, ...query } });
+        }
         return result;
     } catch (error) {
         console.error('Error deleting booking:', error);

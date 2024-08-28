@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
+import {io} from "socket.io-client";
 
 const Rooms = ({ selectedUser }) => {
     const [roomRows, setRoomRows] = useState([]);
@@ -26,6 +27,19 @@ const Rooms = ({ selectedUser }) => {
             console.error('Error fetching possible rooms:', error);
         }
     };
+
+    useEffect(() => {
+        const socket = io(process.env.REACT_APP_BACKEND_URL);
+
+        socket.on('userChanged', () => {
+            fetchPossibleRooms();
+        });
+
+        // Cleanup on component unmount
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
 
     useEffect(() => {
         fetchPossibleRooms();

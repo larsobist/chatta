@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import { DataGrid } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 
@@ -22,6 +23,27 @@ const Bookings = ({ selectedUser }) => {
             console.error('Error fetching bookings:', error);
         }
     };
+
+    useEffect(() => {
+        const socket = io(process.env.REACT_APP_BACKEND_URL);
+
+        socket.on('connect', () => {
+            console.log('Successfully connected to the server');
+        });
+
+        socket.on('bookingChanged', () => {
+            fetchBookings();
+        });
+
+        socket.on('userChanged', () => {
+            fetchBookings();
+        });
+
+        // Cleanup on component unmount
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
 
     useEffect(() => {
         fetchBookings();

@@ -7,10 +7,10 @@ const LoadingScreen = () => {
                 </div>
                 <div className="chat-box">
                     <div className="chat-message bot">
-                        Please wait a few seconds to load the backend
+                        Please wait a few moments to load the backend
                     </div>
                     <div className="chat-message bot">
-                        This may take up to two minutes
+                        This may take a couple minutes
                     </div>
                     <div className="chat-message bot">
                         <div className="typing-indicator">

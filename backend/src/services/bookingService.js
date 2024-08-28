@@ -25,7 +25,7 @@ const getAvailableRooms = async (query) => {
         let userRoles = currentUser.role;
 
         // Ensure userRoles is an array, to handle multiple roles
-        if (!Array.isArray(userRoles)) { userRoles = [userRoles]; }
+        if (!Array.isArray(userRoles)) userRoles = [userRoles];
 
         const roomsCollection = getCollection('rooms');
         let rooms = await roomsCollection.find().toArray();
@@ -37,17 +37,14 @@ const getAvailableRooms = async (query) => {
         console.log('Filtered by roles:', rooms);
 
         // If a room number is specified, filter by room number
-        if (roomNumber) {
-            rooms = rooms.filter(room => room.roomNumber === roomNumber);
-            console.log(`Filtered by room number ${roomNumber}:`, rooms);
-        }
+        if (roomNumber) rooms = rooms.filter(room => room.roomNumber === roomNumber);
+
 
         // If equipment is specified, filter by equipment
         if (equipment.length > 0) {
             rooms = rooms.filter(room => {
                 return equipment.every(item => (room.equipment || []).includes(item));
             });
-            console.log(`Filtered by equipment [${equipment.join(', ')}]:`, rooms);
         }
 
         // Check for room availability if date and timeSlot are provided
@@ -56,7 +53,6 @@ const getAvailableRooms = async (query) => {
             rooms = rooms.filter(room =>
                 !bookedRooms.some(booking => booking.roomNumber === room.roomNumber)
             );
-            console.log(`Filtered availability on ${date} at ${timeSlot}:`, rooms);
         }
 
         return rooms;
@@ -88,26 +84,17 @@ const createBooking = async (bookingDetails) => {
         // Use findRooms to get all accessible and available rooms
         const availableRooms = await getAvailableRooms({ roomNumber, equipment, date, timeSlot });
 
-        if (availableRooms.length === 0) {
-            throw new Error('No available rooms match your criteria or you don’t have access to any rooms.');
-        }
+        if (availableRooms.length === 0) throw new Error('No available rooms match your criteria or you don’t have access to any rooms.');
 
         // Select the first room if no specific roomNumber is provided
         const selectedRoom = availableRooms[0];
 
         // Create the booking with the selected room
-        const finalBookingDetails = {
-            username,
-            roomNumber: selectedRoom.roomNumber,
-            date,
-            timeSlot
-        };
+        const finalBookingDetails = { username, roomNumber: selectedRoom.roomNumber, date, timeSlot };
 
         const result = await bookingsCollection.insertOne(finalBookingDetails);
 
-        if (io) {
-            io.emit('bookingChanged', { action: 'created', booking: finalBookingDetails });
-        }
+        if (io) io.emit('bookingChanged', { action: 'created', booking: finalBookingDetails });
 
         return result;
     } catch (error) {
@@ -126,9 +113,7 @@ const updateBooking = async (query) => {
         if (new_date) updateFields.date = new_date;
         if (new_timeSlot) updateFields.timeSlot = new_timeSlot;
 
-        if (Object.keys(updateFields).length === 0) {
-            throw new Error("No valid update fields provided");
-        }
+        if (Object.keys(updateFields).length === 0) throw new Error("No valid update fields provided");
 
         // Check if new room and timeslot are available (if provided)
         if (new_roomNumber || new_date || new_timeSlot) {
@@ -138,22 +123,15 @@ const updateBooking = async (query) => {
                 timeSlot: new_timeSlot || originalQuery.timeSlot
             });
 
-            if (availableRooms.length === 0) {
-                throw new Error('No available rooms match your criteria or you don’t have access to any rooms.');
-            }
+            if (!availableRooms.length) throw new Error('No available rooms match your criteria or you don’t have access to any rooms.');
         }
-
-        console.log('Original query:', originalQuery);
-        console.log('Update fields:', updateFields);
 
         const result = await bookingsCollection.updateOne(
             { username, ...originalQuery },
             { $set: updateFields }
         );
 
-        if (io) {
-            io.emit('bookingChanged', { action: 'updated', booking: { username, ...originalQuery, ...updateFields } });
-        }
+        if (io) io.emit('bookingChanged', { action: 'updated', booking: { username, ...originalQuery, ...updateFields } });
 
         return result;
     } catch (error) {
@@ -165,14 +143,8 @@ const updateBooking = async (query) => {
 const deleteBooking = async (query) => {
     const username = await getCurrentUsername();
     try {
-        console.log(query, username)
         const result = await bookingsCollection.deleteOne({ username, ...query });
-
-        if (io) {
-            io.emit('bookingChanged', { action: 'deleted', booking: { username, ...query } });
-        }
-
-        console.log(result)
+        if (io) io.emit('bookingChanged', { action: 'deleted', booking: { username, ...query } });
         return result;
     } catch (error) {
         console.error('Error deleting booking:', error);

@@ -1,15 +1,12 @@
 const { findBooking, createBooking, deleteBooking, updateBooking, getAvailableRooms} = require('./bookingService');
 
 const handleDialogflowRequest = async (data) => {
+    //Format data
     const intentName = data.fulfillmentInfo.tag;
     const dateObj = data.sessionInfo.parameters.date || {};
     const newDateObj = data.sessionInfo.parameters.new_date || {};
-
-    console.log(data.sessionInfo.parameters);
-
     const formattedDate = formatDateString(dateObj);
     const formattedNewDate = formatDateString(newDateObj);
-
     const functionArgs = createFunctionArgs(data, formattedDate, formattedNewDate);
 
     try {
@@ -95,7 +92,7 @@ const handleGetAvailableRooms = async (functionArgs) => {
         const text = result.length > 0 ? result.map(room => {
             const equipmentList = room.equipment.join(', ');
             return `Nr: ${room.roomNumber}, Equipment: ${equipmentList}`;
-        }).join('\n') : 'Nichts gefunden für deine Kriterien';
+        }).join('\n') : 'Nothing found for your criteria';
         return {
             fulfillment_response: { messages: [{ text: { text: [`\n${text}`] }}]}
         };

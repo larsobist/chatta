@@ -20,12 +20,10 @@ const Rule = ({ selectedUser, language }) => {
                         'User-Agent': 'chatta/0.0.2'
                     }
                 });
-                console.log('Backend URL:', process.env.REACT_APP_BACKEND_URL);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch access token: ${response.statusText}`);
                 }
                 const data = await response.json();
-                console.log('Access token fetched:', data.token);  // Logging the fetched token
                 setAccessToken(data.token);
                 setIsTokenFetched(true);
             } catch (error) {
@@ -62,8 +60,6 @@ const Rule = ({ selectedUser, language }) => {
                     body: JSON.stringify(requestBody),
                 }
             );
-            console.log('Backend URL:', process.env.REACT_APP_BACKEND_URL);
-
 
             if (!response.ok) {
                 const errorText = await response.text();

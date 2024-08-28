@@ -12,7 +12,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*",  // Adjust the origin to your requirements
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
@@ -33,7 +33,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// Ensure DB connection is established once before starting services
 const startServer = async () => {
     await connectClient(); // Ensure DB connection is established once
 

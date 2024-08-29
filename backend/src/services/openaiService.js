@@ -17,10 +17,12 @@ const initializeMessageHistory = (language) => {
         This includes checking the availability of rooms, providing details on equipment options, and fulfilling requests. 
         You can help with any related queries. The functions you can perform include:
         1. find_booking: Find a reservation with the given parameters or display all bookings if no parameters are provided.
-        2. create_booking: Create a new reservation with the specified date and time slot. Other parameters are optional.
+        2. create_booking: Create a new reservation with the specified date and time slot. Only allow bookings on the hour (e.g., 09:00, 10:00).
         3. delete_booking: Delete an existing reservation with the specified parameters.
         4. update_booking: Update an existing reservation with the given parameters.
         5. get_available_rooms: List all rooms available to the user based on the specified parameters. Sometimes the user asks to create a booking with that data.
+        Ensure that all outputs are in plain text without any markdown formatting. If a user attempts to book a time slot that is not on the hour (e.g., 09:30),
+        respond with an error message asking them to provide a valid time slot.
         When a request like creating a booking, updating, or deleting, send a validation message.
         If a user asks about anything outside the scope of room-related information, gently remind them that your assistance is focused on room reservations and related services.
         Keep your answers compact.
@@ -69,7 +71,7 @@ const handleOpenAIRequest = async (textInput, language) => {
                     type: "object",
                     properties: {
                         date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" },
+                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:00 format" },
                         roomNumber: { type: "string", description: "The room number for the booking" },
                         equipment: { type: "array", items: { type: "string" }, description: "List of equipment needed in the room" }
                     },
@@ -81,13 +83,13 @@ const handleOpenAIRequest = async (textInput, language) => {
             type: "function",
             function: {
                 name: "create_booking",
-                description: "Create a reservation with the params date and timeslot, after receiving that input, ask if they want a specific room based on the roomnumber or equipment.",
+                description: "Create a reservation with the params date and timeslot, after receiving that input, ask if they want a specific room based on the roomnumber or equipment. Only allow bookings at full hours (e.g., 09:00, 10:00).",
                 parameters: {
                     type: "object",
                     properties: {
                         roomNumber: { type: "string", description: "The room number for the booking" },
                         date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" },
+                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:00 format" },
                         equipment: { type: "array", items: { type: "string" }, description: "List of equipment needed in the room" }
                     },
                     required: ["date", "timeSlot"]
@@ -104,7 +106,7 @@ const handleOpenAIRequest = async (textInput, language) => {
                     properties: {
                         roomNumber: { type: "string", description: "The room number of the booking, e.g., 101" },
                         date: { type: "string", description: "The date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:MM format" }
+                        timeSlot: { type: "string", description: "The time of the booking, e.g., 11:00, always in HH:00 format" }
                     },
                     required: ["date", "roomNumber", "timeSlot"]
                 }
@@ -120,10 +122,10 @@ const handleOpenAIRequest = async (textInput, language) => {
                     properties: {
                         roomNumber: { type: "string", description: "The room number of the booking, e.g., 101" },
                         date: { type: "string", description: "The current date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:MM format" },
+                        timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:00 format" },
                         new_roomNumber: { type: "string", description: "The updated room number of the booking, e.g., 101" },
                         new_date: { type: "string", description: "The updated date of the booking, e.g., 2024-06-27" },
-                        new_timeSlot: { type: "string", description: "The updated time of the booking, e.g., 12:00, always in HH:MM format" }
+                        new_timeSlot: { type: "string", description: "The updated time of the booking, e.g., 12:00, always in HH:00 format" }
                     },
                     required: ["date", "timeSlot", "new_date", "new_timeSlot"]
                 }
@@ -138,10 +140,9 @@ const handleOpenAIRequest = async (textInput, language) => {
                     type: "object",
                     properties: {
                         date: { type: "string", description: "The current date of the booking, e.g., 2024-06-26" },
-                        timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:MM format" },
+                        timeSlot: { type: "string", description: "The current time of the booking, e.g., 11:00, always in HH:00 format" },
                         roomNumber: { type: "string", description: "The room number of the booking, e.g., 101" },
-                        equipment: { type: "array", items: { type: "string" }, description: "List of equipment required, e.g., PC or Whiteboard"
-                        }
+                        equipment: { type: "array", items: { type: "string" }, description: "List of equipment required, e.g., PC or Whiteboard" }
                     },
                     required: []
                 }

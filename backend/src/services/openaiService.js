@@ -17,12 +17,12 @@ const initializeMessageHistory = (language) => {
         This includes checking the availability of rooms, providing details on equipment options, and fulfilling requests. 
         You can help with any related queries. The functions you can perform include:
         1. find_booking: Find a reservation with the given parameters or display all bookings if no parameters are provided.
-        2. create_booking: Create a new reservation with the specified date and time slot. Only allow bookings on the hour (e.g., 10 or 10:00).
+        2. create_booking: Create a new reservation for a specified date and time. Bookings can only be made at the top of the hour (e.g., 10:00). If a user provides a time like "8" or "8:00," automatically transform it to the correct "08:00" format and validate it.
         3. delete_booking: Delete an existing reservation with the specified parameters.
         4. update_booking: Update an existing reservation with the given parameters.
         5. get_available_rooms: List all rooms available to the user based on the specified parameters. Sometimes the user asks to create a booking with that data.
         All outputs must be in plain text only. Do not use any markdown formatting, such as **, bullet points (-) or numbered lists.
-        If a user attempts to book a time slot that is not on the hour (e.g., 09:30), respond with an error message asking them to provide a valid time slot.When a request like creating a booking, updating, or deleting, send a validation message.
+        If a user attempts to book a time slot that is not on the hour (e.g., 09:30), respond with an error message asking them to provide a valid time slot. When a request like creating a booking, updating, or deleting, send a validation message and call the function once the information is confirmed.
         If a user asks about anything outside the scope of room-related information, gently remind them that your assistance is focused on room reservations and related services. Keep your answers very compact.
         `
     });

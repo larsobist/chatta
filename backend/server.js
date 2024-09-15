@@ -17,26 +17,30 @@ const io = new Server(server, {
     }
 });
 
+// Middleware to parse JSON requests and enable CORS
 app.use(express.json());
 app.use(cors());
 
+// Define routes for users, OpenAI, and Google
 app.use('/', userRoutes);
 app.use('/', openaiRoutes);
 app.use('/', googleRoutes);
 
+// Set up Socket.IO event listeners
 io.on('connection', (socket) => {
     console.log('A user connected');
 
-    // Define your event listeners and handlers here
+    // Handle socket disconnection
     socket.on('disconnect', () => {
         console.log('A user disconnected');
     });
 });
 
+// Start the server and connect to the database
 const startServer = async () => {
-    await connectClient(); // Ensure DB connection is established once
+    await connectClient(); // Ensure DB connection is established
 
-    // Pass the io object to the booking and user services
+    // Pass the Socket.IO instance to services and set collections
     const bookingService = require('./src/services/bookingService');
     bookingService.setSocket(io);
     await bookingService.setCollections();

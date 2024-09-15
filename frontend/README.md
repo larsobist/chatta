@@ -1,70 +1,64 @@
-# Getting Started with Create React App
+# Chatta
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Chatta is a web application built with React that provides real-time interaction features with multilingual support and live data updates via WebSockets. The app utilizes Material UI for the interface and Socket.IO for real-time communication.
 
-## Available Scripts
+## Live Prototype
 
-In the project directory, you can run:
+You can access the prototype in action via https://larsobist.github.io/chatta/
 
-### `npm start`
+## Project Setup
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+To set up and run the project locally, follow these steps:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+1. **Clone the repository**:
+    ```bash
+    git clone https://github.com/larsobist/chatta.git
+    cd frontend
+    ```
 
-### `npm test`
+2. **Install dependencies**:
+   Ensure you have [Node.js](https://nodejs.org/) installed, then run:
+    ```bash
+    npm install
+    ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+3. **Start the application**:
+    ```bash
+    npm run frontend
+    ```
 
-### `npm run build`
+This will start the app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Deployment
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The project is configured to be deployed on GitHub Pages. To deploy the app:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Ensure the `homepage` field in `package.json` points to the correct GitHub Pages URL.
+2. Run the following commands:
+    ```bash
+    npm run deploy
+    ```
 
-### `npm run eject`
+This will deploy the build folder to GitHub Pages, and the app will be available at [https://larsobist.github.io/chatta](https://larsobist.github.io/chatta).
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Dependencies
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Core Dependencies
+- **React**: A JavaScript library for building user interfaces.
+- **Material UI**: A popular React UI framework.
+- **i18next**: An internationalization framework for React.
+- **Socket.IO Client**: Enables real-time, bidirectional communication between web clients and servers.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Development Dependencies
+- **gh-pages**: A utility for deploying the app to GitHub Pages.
+- **React Scripts**: A set of scripts and configuration for developing React apps.
+## Environment Variables
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Create a `.env` file in the root of the project and add the following variables:
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+REACT_APP_BACKEND_URL
+REACT_APP_GOOGLE_LOCATION
+REACT_APP_GOOGLE_PROJECT_ID
+REACT_APP_GOOGLE_AGENT_ID
+```

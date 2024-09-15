@@ -6,9 +6,10 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTranslation } from 'react-i18next';
 
 const General = ({ selectedUser, language }) => {
-    const [chatbot, setChatbot] = useState('rule');
-    const { t } = useTranslation();
+    const [chatbot, setChatbot] = useState('rule');  // State to track which chatbot is selected ('rule' or 'generative').
+    const { t } = useTranslation();  // Hook for translations.
 
+    // Handle chatbot toggle button selection.
     const handleChatbot = (event, newChatbot) => {
         if (newChatbot !== null) {
             setChatbot(newChatbot);
@@ -25,19 +26,22 @@ const General = ({ selectedUser, language }) => {
                     </div>
                 </div>
 
+                {/* Toggle buttons to switch between rule-based and generative chatbots */}
                 <ToggleButtonGroup
                     value={chatbot}
                     exclusive
                     onChange={handleChatbot}
                 >
                     <ToggleButton value="rule">
-                    {t('ruleBased')}
+                        {t('ruleBased')} {/* Translate the label for rule-based chatbot */}
                     </ToggleButton>
                     <ToggleButton value="generative">
-                        {t('generative')}
+                        {t('generative')} {/* Translate the label for generative chatbot */}
                     </ToggleButton>
                 </ToggleButtonGroup>
             </div>
+
+            {/* Render either the Rule-based or Generative component based on the selected chatbot */}
             {chatbot === 'rule' && (
                 <Rule key={selectedUser.id} selectedUser={selectedUser} language={language} />
             )}

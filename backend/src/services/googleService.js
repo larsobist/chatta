@@ -1,7 +1,7 @@
-const { findBooking, createBooking, deleteBooking, updateBooking, getAvailableRooms} = require('./bookingService');
+const { findBooking, createBooking, deleteBooking, updateBooking, getAvailableRooms } = require('./bookingService');
 
+// Main handler for Dialogflow requests, directing to the appropriate booking functions based on intent.
 const handleDialogflowRequest = async (data) => {
-    //Format data
     const intentName = data.fulfillmentInfo.tag;
     const dateObj = data.sessionInfo.parameters.date || {};
     const newDateObj = data.sessionInfo.parameters.new_date || {};
@@ -32,10 +32,12 @@ const handleDialogflowRequest = async (data) => {
     }
 };
 
+// Format date object into 'YYYY-MM-DD' format.
 const formatDateString = (dateObj) => {
     return dateObj.year ? `${dateObj.year}-${String(dateObj.month).padStart(2, '0')}-${String(dateObj.day).padStart(2, '0')}` : null;
 };
 
+// Create function arguments based on Dialogflow session parameters.
 const createFunctionArgs = (data, formattedDate, formattedNewDate) => {
     const functionArgs = {};
     if (formattedDate) functionArgs.date = formattedDate;
@@ -48,6 +50,7 @@ const createFunctionArgs = (data, formattedDate, formattedNewDate) => {
     return functionArgs;
 };
 
+// Handle the 'findBooking' intent and return a response with booking information.
 const handleFindBooking = async (functionArgs) => {
     try {
         const result = await findBooking(functionArgs);
@@ -62,6 +65,7 @@ const handleFindBooking = async (functionArgs) => {
     }
 };
 
+// Handle the 'createBooking' intent.
 const handleCreateBooking = async (functionArgs) => {
     try {
         await createBooking(functionArgs);
@@ -70,6 +74,7 @@ const handleCreateBooking = async (functionArgs) => {
     }
 };
 
+// Handle the 'deleteBooking' intent.
 const handleDeleteBooking = async (functionArgs) => {
     try {
         await deleteBooking(functionArgs);
@@ -78,6 +83,7 @@ const handleDeleteBooking = async (functionArgs) => {
     }
 };
 
+// Handle the 'updateBooking' intent.
 const handleUpdateBooking = async (functionArgs) => {
     try {
         await updateBooking(functionArgs);
@@ -86,6 +92,7 @@ const handleUpdateBooking = async (functionArgs) => {
     }
 };
 
+// Handle the 'getAvailableRooms' intent and return available rooms information.
 const handleGetAvailableRooms = async (functionArgs) => {
     try {
         const result = await getAvailableRooms(functionArgs);

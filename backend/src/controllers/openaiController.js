@@ -1,5 +1,6 @@
 const { handleOpenAIRequest } = require('../services/openaiService');
 
+// Handle incoming requests to process text with OpenAI.
 const handleOpenAIRequestHandler = async (req, res) => {
     const textInput = req.body.text;
     const language = req.body.language;

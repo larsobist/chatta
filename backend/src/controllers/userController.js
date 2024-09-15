@@ -1,5 +1,6 @@
 const userService = require('../services/userService');
 
+// Retrieve and return a list of users.
 const getUsers = async (req, res) => {
     try {
         const users = await userService.getUsers();
@@ -10,6 +11,7 @@ const getUsers = async (req, res) => {
     }
 };
 
+// Update the selected user and return the updated user data.
 const updateSelectedUser = async (req, res) => {
     const user = req.body.selectedUser;
     try {
@@ -21,6 +23,7 @@ const updateSelectedUser = async (req, res) => {
     }
 };
 
+// Fetch and return bookings for the current user.
 const getUserBookings = async (req, res) => {
     try {
         const currentUser = await userService.getCurrentUser();
@@ -32,17 +35,19 @@ const getUserBookings = async (req, res) => {
     }
 };
 
+// Fetch and return possible rooms for the current user based on their role.
 const getUserPossibleRooms = async (req, res) => {
     try {
         const currentUser = await userService.getCurrentUser();
         const rooms = await userService.getUserPossibleRooms(currentUser.role);
         res.json(rooms);
     } catch (error) {
-        console.error('Error fetching bookings:', error);
+        console.error('Error fetching rooms:', error);
         res.status(500).send('Internal Server Error');
     }
 };
 
+// Fetch and return the current user.
 const getCurrentUser = async (req, res) => {
     try {
         const user = await userService.getCurrentUser();

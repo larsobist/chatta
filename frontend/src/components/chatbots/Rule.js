@@ -4,11 +4,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from 'react-i18next';
 
 const Rule = ({ selectedUser, language }) => {
-    const [accessToken, setAccessToken] = useState(null);
-    const [isTokenFetched, setIsTokenFetched] = useState(false);
-    const sessionId = uuidv4();
-    const { t } = useTranslation();
+    const [accessToken, setAccessToken] = useState(null);  // State to store the access token.
+    const [isTokenFetched, setIsTokenFetched] = useState(false);  // State to track if the token has been fetched.
+    const sessionId = uuidv4();  // Unique session ID for Dialogflow requests.
+    const { t } = useTranslation();  // Hook for translations.
 
+    // Fetch access token when the component mounts or when selectedUser/language changes.
     useEffect(() => {
         setIsTokenFetched(false);
         setAccessToken(null);
@@ -24,16 +25,17 @@ const Rule = ({ selectedUser, language }) => {
                     throw new Error(`Failed to fetch access token: ${response.statusText}`);
                 }
                 const data = await response.json();
-                setAccessToken(data.token);
-                setIsTokenFetched(true);
+                setAccessToken(data.token);  // Store the fetched token.
+                setIsTokenFetched(true);  // Indicate that the token has been fetched.
             } catch (error) {
                 console.error('Error fetching access token:', error);
             }
         };
 
-        fetchToken();
+        fetchToken();  // Call the token fetching function.
     }, [selectedUser, language]);
 
+    // Fetch response from Dialogflow using the access token and user input.
     const fetchResponse = async (selectedUser, text) => {
         if (!accessToken) {
             throw new Error('Access token not available');
@@ -55,9 +57,9 @@ const Rule = ({ selectedUser, language }) => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${accessToken}`,  // Use the access token for authorization.
                     },
-                    body: JSON.stringify(requestBody),
+                    body: JSON.stringify(requestBody),  // Send the user message to Dialogflow.
                 }
             );
 
@@ -70,15 +72,16 @@ const Rule = ({ selectedUser, language }) => {
             const responseData = await response.json();
             const botMessage = responseData.queryResult.responseMessages
                 .map(msg => msg.text.text)
-                .join('\n');
+                .join('\n');  // Extract and format the bot's response message.
 
-            return botMessage;
+            return botMessage;  // Return the bot's message.
         } catch (error) {
             console.error('Error fetching response from Dialogflow:', error);
             throw error;
         }
     };
 
+    // Generate the initial bot message using the user's name.
     const initialBotMessage = (userName) => t('botMessage', { userName });
 
     return (
@@ -86,7 +89,7 @@ const Rule = ({ selectedUser, language }) => {
             selectedUser={selectedUser}
             fetchResponse={fetchResponse}
             initialBotMessage={initialBotMessage}
-            isLoading={!isTokenFetched}
+            isLoading={!isTokenFetched}  // Indicate loading state while the token is being fetched.
         />
     );
 };

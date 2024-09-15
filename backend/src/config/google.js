@@ -1,7 +1,9 @@
 const { GoogleAuth } = require('google-auth-library');
 
+// Decode and format the Google private key from environment variables.
 const googlePrivateKey = decodeURIComponent(process.env.GOOGLE_PRIVATE_KEY).replace(/\\n/g, '\n');
 
+// Create the service account credentials object using environment variables.
 const SERVICE_ACCOUNT_KEY = {
     type: process.env.GOOGLE_TYPE,
     project_id: process.env.GOOGLE_PROJECT_ID,
@@ -16,6 +18,7 @@ const SERVICE_ACCOUNT_KEY = {
     universe_domain: process.env.GOOGLE_UNIVERSE_DOMAIN,
 };
 
+// Initialize GoogleAuth client with service account credentials and scope.
 const client = new GoogleAuth({
     credentials: SERVICE_ACCOUNT_KEY,
     scopes: ['https://www.googleapis.com/auth/cloud-platform'],

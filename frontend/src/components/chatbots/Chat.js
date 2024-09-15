@@ -6,12 +6,14 @@ import { useTranslation } from 'react-i18next';
 
 const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => {
     const { t } = useTranslation();
+    // Manage state for messages, input text, fade-out effect, and message sent flag.
     const [messages, setMessages] = useState([{ type: 'bot', content: isLoading ? 'loading' : initialBotMessage(selectedUser.name) }]);
     const [text, setText] = useState('');
     const [showFadeOut, setShowFadeOut] = useState(false);
     const [hasMessageBeenSent, setHasMessageBeenSent] = useState(false);
     const chatBoxRef = useRef(null);
 
+    // Sample bot messages to be shown before a user sends a message.
     const sampleMessages = [
         t('findRoom'),
         t('addBooking'),
@@ -19,6 +21,7 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
         t('deleteBooking')
     ];
 
+    // Scroll to the bottom when messages are updated and toggle fade-out effect.
     useEffect(() => {
         if (chatBoxRef.current) {
             chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
@@ -26,11 +29,13 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
         }
     }, [messages]);
 
+    // Reset messages when the selected user changes or the loading state changes.
     useEffect(() => {
         setMessages([{ type: 'bot', content: isLoading ? 'loading' : initialBotMessage(selectedUser.name) }]);
-        setHasMessageBeenSent(false);  // Reset hasMessageBeenSent when the user changes
+        setHasMessageBeenSent(false);
     }, [selectedUser, initialBotMessage, isLoading]);
 
+    // Handle message sending by updating message state and invoking the fetch response.
     const handleSend = async (messageText = text) => {
         if (messageText.trim() === '') return;
 
@@ -38,7 +43,7 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
         const typingIndicator = { type: 'bot', content: 'typing' };
         setMessages(prevMessages => [...prevMessages, userMessage, typingIndicator]);
         setText('');
-        setHasMessageBeenSent(true); // Hide sample messages after the first message is sent
+        setHasMessageBeenSent(true);
 
         try {
             const response = await fetchResponse(selectedUser, messageText);
@@ -51,10 +56,12 @@ const Chat = ({ selectedUser, fetchResponse, initialBotMessage, isLoading }) => 
         }
     };
 
+    // Send a predefined sample message when clicked.
     const handleSampleMessageClick = (message) => {
         handleSend(message);
     };
 
+    // Convert RGB color string to RGBA for transparency.
     const rgbToRgba = (rgb, alpha) => {
         return rgb.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
     };

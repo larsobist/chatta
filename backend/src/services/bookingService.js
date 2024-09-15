@@ -4,49 +4,51 @@ const { getCurrentUser } = require('./userService');
 let io;
 let bookingsCollection;
 
+// Set the Socket.IO instance for real-time updates.
 const setSocket = (socketIo) => {
     io = socketIo;
 };
 
+// Initialize the bookings collection from the database.
 const setCollections = async () => {
     bookingsCollection = getCollection('bookings');
 };
 
+// Retrieve the current user's username.
 const getCurrentUsername = async () => {
     const currentUser = await getCurrentUser();
     return currentUser.name;
 };
 
+// Get available rooms based on the user's roles and provided query parameters.
 const getAvailableRooms = async (query) => {
     try {
         const { roomNumber, equipment = [], date, timeSlot } = query;
-        console.log(query)
         const currentUser = await getCurrentUser();
         let userRoles = currentUser.role;
 
-        // Ensure userRoles is an array, to handle multiple roles
+        // Ensure userRoles is an array to handle multiple roles.
         if (!Array.isArray(userRoles)) userRoles = [userRoles];
 
         const roomsCollection = getCollection('rooms');
         let rooms = await roomsCollection.find().toArray();
 
-        // Filter rooms where any of the user's roles are in the allowedRoles array
+        // Filter rooms based on user's allowed roles.
         rooms = rooms.filter(room => {
             return userRoles.some(role => room.allowedRoles.includes(role));
         });
 
-        // If a room number is specified, filter by room number
+        // If a room number is specified, filter by room number.
         if (roomNumber) rooms = rooms.filter(room => room.roomNumber === roomNumber);
 
-
-        // If equipment is specified, filter by equipment
+        // Filter rooms based on the required equipment.
         if (equipment.length > 0) {
             rooms = rooms.filter(room => {
                 return equipment.every(item => (room.equipment || []).includes(item));
             });
         }
 
-        // Check for room availability if date and timeSlot are provided
+        // Check room availability based on date and time slot.
         if (date && timeSlot) {
             const bookedRooms = await bookingsCollection.find({ date, timeSlot }).toArray();
             rooms = rooms.filter(room =>
@@ -61,12 +63,12 @@ const getAvailableRooms = async (query) => {
     }
 };
 
+// Find bookings for the current user based on query parameters.
 const findBooking = async (functionArgs) => {
     const username = await getCurrentUsername();
     try {
         const query = { username, ...functionArgs };
         const result = await bookingsCollection.find(query).toArray();
-        console.log('findBooking result:', result);
         return result;
     } catch (error) {
         console.error('Error finding booking:', error);
@@ -74,12 +76,11 @@ const findBooking = async (functionArgs) => {
     }
 };
 
+// Create a booking for the current user with the provided details.
 const createBooking = async (bookingDetails) => {
     const username = await getCurrentUsername();
     try {
-        console.log(bookingDetails)
         const { roomNumber, date, timeSlot, equipment = [] } = bookingDetails;
-
         // Use findRooms to get all accessible and available rooms
         const availableRooms = await getAvailableRooms({ roomNumber, equipment, date, timeSlot });
 
@@ -102,6 +103,7 @@ const createBooking = async (bookingDetails) => {
     }
 };
 
+// Update an existing booking for the current user.
 const updateBooking = async (query) => {
     const username = await getCurrentUsername();
     try {
@@ -114,7 +116,7 @@ const updateBooking = async (query) => {
 
         if (Object.keys(updateFields).length === 0) throw new Error("No valid update fields provided");
 
-        // Check if new room and timeslot are available (if provided)
+        // Check if the new room and timeslot are available.
         if (new_roomNumber || new_date || new_timeSlot) {
             const availableRooms = await getAvailableRooms({
                 roomNumber: new_roomNumber || originalQuery.roomNumber,
@@ -139,6 +141,7 @@ const updateBooking = async (query) => {
     }
 };
 
+// Delete a booking for the current user based on query parameters.
 const deleteBooking = async (query) => {
     const username = await getCurrentUsername();
     try {

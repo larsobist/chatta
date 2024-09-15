@@ -1,6 +1,7 @@
 const client = require('../config/google');
 const { handleDialogflowRequest } = require('../services/googleService');
 
+// Fetch and return an access token from Google.
 const getToken = async (req, res) => {
     try {
         const accessToken = await client.getAccessToken();
@@ -11,6 +12,7 @@ const getToken = async (req, res) => {
     }
 };
 
+// Handle Dialogflow requests and return the response.
 const dialogflowHandler = async (req, res) => {
     try {
         const response = await handleDialogflowRequest(req.body);

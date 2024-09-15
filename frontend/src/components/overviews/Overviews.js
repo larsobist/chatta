@@ -7,12 +7,13 @@ import Rooms from './Rooms';
 import './Overviews.scss';
 
 const Overviews = ({ selectedUser }) => {
-    const [view, setView] = useState('bookings');
-    const { t } = useTranslation();
+    const [view, setView] = useState('bookings');  // State to track the current view ('bookings' or 'rooms')
+    const { t } = useTranslation();  // Hook for translations
 
+    // Handle switching between 'bookings' and 'rooms' views
     const handleViewChange = (event, newView) => {
         if (newView !== null) {
-            setView(newView);
+            setView(newView);  // Update the view state
         }
     };
 
@@ -20,6 +21,7 @@ const Overviews = ({ selectedUser }) => {
         <div>
             <div className="info-container">
                 <h1>{t('overviews')}</h1>
+                {/* ToggleButtonGroup to switch between bookings and rooms */}
                 <ToggleButtonGroup
                     value={view}
                     exclusive
@@ -27,13 +29,15 @@ const Overviews = ({ selectedUser }) => {
                     aria-label="view toggle"
                 >
                     <ToggleButton value="bookings">
-                        {t('bookings')}
+                        {t('bookings')}  {/* Translated label for bookings */}
                     </ToggleButton>
                     <ToggleButton value="rooms">
-                        {t('rooms')}
+                        {t('rooms')}  {/* Translated label for rooms */}
                     </ToggleButton>
                 </ToggleButtonGroup>
             </div>
+
+            {/* Conditionally render Bookings or Rooms component based on the current view */}
             {view === 'bookings' ? <Bookings selectedUser={selectedUser} /> : <Rooms selectedUser={selectedUser} />}
         </div>
     );

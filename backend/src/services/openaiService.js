@@ -3,35 +3,42 @@ const { findBooking, createBooking, updateBooking, deleteBooking, getAvailableRo
 
 let messageHistory = [];
 
+// Get the current date in 'YYYY-MM-DD' format.
 const getCurrentDate = () => {
     return new Date().toISOString().split('T')[0];
 };
 
+// Initialize message history with a system message for the assistant's context.
 const initializeMessageHistory = (language) => {
     const currentDate = getCurrentDate();
     messageHistory.push({
         role: "system",
         content: `
-        You are a helpful room booking assistant for a company called chatta. Today's date is ${currentDate} and the language you communicate is ${language}.
-        Your main responsibility is to assist users with all aspects of room reservations and call functions. 
-        This includes checking the availability of rooms, providing details on equipment options, and fulfilling requests. 
-        You can help with any related queries. The functions you can perform include:
+        You are a helpful room booking assistant for a company called chatta. Today's date is ${currentDate} and the 
+        language you communicate is ${language}. Your main responsibility is to assist users with all aspects of room 
+        reservations and call functions. This includes checking the availability of rooms, providing details on equipment 
+        options, and fulfilling requests. You can help with any related queries. The functions you can perform include:
         1. find_booking: Find a reservation with the given parameters or display all bookings if no parameters are provided.
-        2. create_booking: Create a new reservation for a specified date and time. Bookings can only be made at the top of the hour (e.g., 10:00). If a user provides a time like "8" or "8:00," automatically transform it to the correct "08:00" format and validate it.
+        2. create_booking: Create a new reservation for a specified date and time. Bookings can only be made at the top of the hour 
+        (e.g., 10:00). If a user provides a time like "8" or "8:00," automatically transform it to "08:00" and validate it.
         3. delete_booking: Delete an existing reservation with the specified parameters.
         4. update_booking: Update an existing reservation with the given parameters.
-        5. get_available_rooms: List all rooms available to the user based on the specified parameters. Sometimes the user asks to create a booking with that data.
-        All outputs must be in plain text only. Do not use any markdown formatting, such as **, bullet points (-) or numbered lists.
-        If a user attempts to book a time slot that is not on the hour (e.g., 09:30), respond with an error message asking them to provide a valid time slot. When a request like creating a booking, updating, or deleting, send a validation message and call the function once the information is confirmed.
-        If a user asks about anything outside the scope of room-related information, gently remind them that your assistance is focused on room reservations and related services. Keep your answers very compact.
+        5. get_available_rooms: List all rooms available to the user based on the specified parameters. Sometimes the user asks to create 
+        a booking with that data.All outputs must be in plain text only. Do not use any markdown formatting, such as **, bullet points (-) 
+        or numbered lists.If a user attempts to book a time slot that is not on the hour (e.g., 09:30), respond with an error message asking 
+        them to provide a valid time slot. When a request like creating a booking, updating, or deleting, send a validation message and call 
+        the function once the information is confirmed. If a user asks about anything outside the scope of room-related information, gently 
+        remind them that your assistance is focused on room reservations and related services. Keep your answers very compact.
         `
     });
 };
 
+// Add a message to the conversation history.
 const addMessageToHistory = (role, content) => {
     messageHistory.push({ role: role, content: content });
 };
 
+// Handle the tool calls (e.g., find_booking, create_booking) and execute corresponding functions.
 const handleToolCalls = async (toolCalls) => {
     const availableFunctions = {
         find_booking: findBooking,
@@ -55,10 +62,12 @@ const handleToolCalls = async (toolCalls) => {
     }
 };
 
+// Main function to handle OpenAI API requests.
 const handleOpenAIRequest = async (textInput, language) => {
     initializeMessageHistory(language);
     addMessageToHistory("user", textInput);
 
+    // Function descriptions
     const tools = [
         {
             type: "function",
@@ -162,7 +171,7 @@ const handleOpenAIRequest = async (textInput, language) => {
         const toolCalls = responseMessage.tool_calls;
         if (toolCalls && toolCalls.length > 0) {
             await handleToolCalls(toolCalls);
-
+            // Parse result to new response
             const secondResponse = await openai.chat.completions.create({
                 model: "gpt-4o",
                 messages: messageHistory

@@ -55,7 +55,7 @@ const handleFindBooking = async (functionArgs) => {
     try {
         const result = await findBooking(functionArgs);
         const text = result.length > 0 ? result.map(booking => {
-            return `Nr: ${booking.roomNumber}, ${booking.date}, ${booking.timeSlot}`;
+            return `Nr: ${booking.roomNumber}, ${booking.date}, ${booking.timeSlot}. `;
         }).join('\n') : 'Nichts gefunden für deine Kriterien';
         return {
             fulfillment_response: { messages: [{ text: { text: [`\n${text}`] }}]}
@@ -98,7 +98,7 @@ const handleGetAvailableRooms = async (functionArgs) => {
         const result = await getAvailableRooms(functionArgs);
         const text = result.length > 0 ? result.map(room => {
             const equipmentList = room.equipment.join(', ');
-            return `Nr: ${room.roomNumber}, Equipment: ${equipmentList}`;
+            return `Nr: ${room.roomNumber}, Equipment: ${equipmentList}. `;
         }).join('\n') : 'Nothing found for your criteria';
         return {
             fulfillment_response: { messages: [{ text: { text: [`\n${text}`] }}]}
